@@ -1,0 +1,23 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $this->call([
+            SettingTableSeeder::class,
+            RolesTableSeeder::class,
+            RolePermissionSeeder::class,
+            AdminsTableSeeder::class,
+            ServiceTableSeeder::class,
+            FleetTableSeeder::class,
+            ReviewTableSeeder::class,
+            PageTableSeeder::class,
+        ]);
+        $this->command->info("\n🎉 All RBAC seeders completed successfully!");
+    }
+}
