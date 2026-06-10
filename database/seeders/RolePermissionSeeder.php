@@ -10,7 +10,7 @@ class RolePermissionSeeder extends Seeder
 {
     private const ENTITIES = [
         'user', 'role', 'permission',
-        'banner', 'category', 'service','fleet','team','page','review','gallery','faq','setting','blog'
+        'banner', 'category', 'service','fleet','team','page','review','gallery','faq','setting','blog','marketing'
     ];
 
     private const ACTIONS = ['read', 'create', 'update', 'delete'];

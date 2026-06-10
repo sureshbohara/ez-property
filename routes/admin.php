@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\FleetController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\MarketingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -163,6 +164,10 @@ Route::prefix('admin')
      Route::post('post/featured', [PostController::class, 'toggleFeatured'])->name('post.featured');
      Route::post('post/order-level', [PostController::class, 'updateOrderLevel'])->name('post.order-level');
      Route::resource('post', PostController::class)->except(['show']);
+
+
+     Route::get('marketing', [MarketingController::class, 'index'])->name('marketing.index');
+     Route::post('marketing/send', [MarketingController::class, 'sendBulkEmail'])->name('marketing.send');
 
 
 });

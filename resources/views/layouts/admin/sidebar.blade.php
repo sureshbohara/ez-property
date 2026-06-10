@@ -111,7 +111,7 @@
             </li>
         @endcanany
 
-        <!-- Navigation -->
+     
         @can('menu.read')
             <li class="menu-label">Navigation</li>
             <li class="{{ request()->routeIs('admin.menu.*') ? 'mm-active' : '' }}">
@@ -121,6 +121,17 @@
                 </a>
             </li>
         @endcan
+
+        @canany(['marketing.read'])
+            <li class="menu-label">Marketing</li>
+            <li class="{{ request()->routeIs('admin.marketing.*') ? 'mm-active' : '' }}">
+                <a href="{{ route('admin.marketing.index') }}">
+                    <div class="parent-icon"><i class="bi bi-megaphone"></i></div> 
+                    <div class="menu-title">Email Marketing</div>
+                </a>
+            </li>
+         @endcan
+ 
 
    
         @canany(['user.read', 'permission.read'])
@@ -173,10 +184,14 @@
                     <li class="{{ request()->routeIs('admin.login-activities.*') ? 'mm-active' : '' }}">
                         <a href="{{ route('admin.login-activities.index') }}"><i class="bi bi-clock-history"></i> Login Activities</a>
                     </li>
+
             
                 </ul>
             </li>
         @endcanany
+
+
+
 
     </ul>
 </aside>
