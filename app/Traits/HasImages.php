@@ -24,6 +24,6 @@ trait HasImages
             return $path;
         }
 
-        return asset('storage/' . $path);
+        return asset('images/' . $path);
     }
 }

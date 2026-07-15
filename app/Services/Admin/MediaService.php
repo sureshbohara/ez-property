@@ -2,46 +2,39 @@
 
 namespace App\Services\Admin;
 
+use App\Jobs\ProcessImage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use App\Jobs\ProcessImage;
-use Illuminate\Support\Facades\Log;
 
 class MediaService
 {
-    public function uploadImage(UploadedFile $file, string $path = 'uploads'): string
+    public function uploadImage(UploadedFile $file): string
     {
-        return $file->store($path, 'public');
-    }
-
-    public function dispatchImageProcessing(string $imagePath): void
-    {
-        ProcessImage::dispatch($imagePath)
-            ->onQueue('images')
-            ->delay(now()->addSeconds(2));
-            
-        Log::info("Image job dispatched: {$imagePath}");
-    }
-
-    public function deleteImageVariants(?string $path, array $sizes = ['thumb', 'medium']): void
-    {
-        if (!$path || !Storage::disk('public')->exists($path)) {
-            return;
-        }
-
-        Storage::disk('public')->delete($path);
+        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
         
-        foreach ($sizes as $size) {
-            $variant = $this->generateVariantPath($path, $size);
-            if (Storage::disk('public')->exists($variant)) {
-                Storage::disk('public')->delete($variant);
-            }
-        }
+ 
+        $path = $file->storeAs('', $filename, 'images');
+        
+        return $path; 
     }
 
-    private function generateVariantPath(string $original, string $size): string
+    public function dispatchImageProcessing(string $path): void
     {
-        $info = pathinfo($original);
-        return "{$info['dirname']}/{$info['filename']}-{$size}.{$info['extension']}";
+        ProcessImage::dispatch($path);
+    }
+
+    public function deleteImageVariants(?string $path): void
+    {
+        if (empty($path)) return;
+
+   
+        Storage::disk('images')->delete($path);
+
+      
+        $pathInfo = pathinfo($path);
+        foreach (['thumb', 'medium'] as $size) {
+            $variantPath = "{$pathInfo['dirname']}/{$pathInfo['filename']}-{$size}.{$pathInfo['extension']}";
+            Storage::disk('images')->delete($variantPath);
+        }
     }
 }

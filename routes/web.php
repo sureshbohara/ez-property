@@ -38,3 +38,5 @@ Route::get('/cacher', function () {
 
 // Include other route files
 require __DIR__.'/admin.php';
+require __DIR__.'/ecom.php';
+require __DIR__.'/listing.php';

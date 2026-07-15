@@ -22,7 +22,7 @@ class ProcessImage implements ShouldQueue
 
     public function __construct(
         public string $imagePath,
-        public string $disk = 'public',
+        public string $disk = 'images',
         public array $sizes = ['thumb' => [150, 150], 'medium' => [400, 400]]
     ) {}
 
@@ -32,7 +32,6 @@ class ProcessImage implements ShouldQueue
             Log::warning("Image not found: {$this->imagePath}");
             return;
         }
-
         try {
             $manager = new ImageManager(new Driver());
             $originalPath = Storage::disk($this->disk)->path($this->imagePath);
@@ -44,7 +43,6 @@ class ProcessImage implements ShouldQueue
                 $resized->save(Storage::disk($this->disk)->path($newPath), 85);
                 Log::info("Variant created: {$newPath}");
             }
-
             $image->save($originalPath, 85);
         } catch (\Exception $e) {
             Log::error("Image processing failed: " . $e->getMessage());

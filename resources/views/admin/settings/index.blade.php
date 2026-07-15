@@ -131,10 +131,6 @@
             
             <div class="p-4 bg-white border-top">
                 <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Changes are saved automatically
-                    </small>
                     <button type="submit" class="btn btn-primary px-4">
                         <i class="bi bi-save me-2"></i>Save Changes
                     </button>
@@ -214,7 +210,6 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         function createRowHTML(index, itemName) {
-            // Context-aware placeholders based on which tab is adding the item
             let iconPlaceholder = "e.g., bi bi-check-circle";
             let titlePlaceholder = "e.g., Feature Title";
             let contentPlaceholder = "Briefly describe this item...";

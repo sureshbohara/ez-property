@@ -14,7 +14,6 @@ class BannerService
     public function __construct(protected Banner $banner, protected MediaService $mediaService) {}
 
 
-    // Fetch paginated banners filtered by status and title
     public function getBanners(array $filters = []){
         return $this->banner->query()
             ->when(!empty($filters['status']), function ($q) use ($filters) {

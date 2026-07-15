@@ -15,9 +15,9 @@
         <div class="col-md-2">
             <select name="display_on" class="form-select form-select-sm">
                 <option value="">All Pages</option>
-                <option value="default" {{ old('display_on', $filters['display_on'] ?? '') == 'default' ? 'selected' : '' }}>🌐 Default</option>
-                <option value="header" {{ old('display_on', $filters['display_on'] ?? '') == 'header' ? 'selected' : '' }}>🔝 Header</option>
-                <option value="footer" {{ old('display_on', $filters['display_on'] ?? '') == 'footer' ? 'selected' : '' }}>🔻 Footer</option>
+                <option value="default" {{ old('display_on', $filters['display_on'] ?? '') == 'default' ? 'selected' : '' }}> Default</option>
+                <option value="header" {{ old('display_on', $filters['display_on'] ?? '') == 'header' ? 'selected' : '' }}> Header</option>
+                <option value="footer" {{ old('display_on', $filters['display_on'] ?? '') == 'footer' ? 'selected' : '' }}> Footer</option>
             </select>
         </div>
 

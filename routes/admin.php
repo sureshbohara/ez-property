@@ -26,6 +26,11 @@ use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\MarketingController;
 
+
+use App\Http\Controllers\Admin\PackageController;
+
+
+
 /*
 |--------------------------------------------------------------------------
 | Admin Routes
@@ -160,14 +165,44 @@ Route::prefix('admin')
         // ==========================================
      // Blog / Posts
      // ==========================================
-     Route::post('post/status', [PostController::class, 'toggleStatus'])->name('post.status');
-     Route::post('post/featured', [PostController::class, 'toggleFeatured'])->name('post.featured');
-     Route::post('post/order-level', [PostController::class, 'updateOrderLevel'])->name('post.order-level');
-     Route::resource('post', PostController::class)->except(['show']);
+    Route::post('post/status', [PostController::class, 'toggleStatus'])->name('post.status');
+    Route::post('post/featured', [PostController::class, 'toggleFeatured'])->name('post.featured');
+    Route::post('post/order-level', [PostController::class, 'updateOrderLevel'])->name('post.order-level');
+    Route::resource('post', PostController::class)->except(['show']);
 
 
-     Route::get('marketing', [MarketingController::class, 'index'])->name('marketing.index');
-     Route::post('marketing/send', [MarketingController::class, 'sendBulkEmail'])->name('marketing.send');
+    Route::get('marketing', [MarketingController::class, 'index'])->name('marketing.index');
+    Route::post('marketing/send', [MarketingController::class, 'sendBulkEmail'])->name('marketing.send');
+
+
+
+
+
+        // ==========================================
+        // Packages & Fixed Departures
+        // ==========================================
+    Route::post('package/status', [PackageController::class, 'packageStatus'])->name('package.status');
+    Route::post('package/order-level', [PackageController::class, 'updateOrderLevel'])->name('package.order-level');
+    Route::post('package/type', [PackageController::class, 'updatePackageType'])->name('package.type');
+    Route::get('package/prices', [PackageController::class, 'packagePrices'])->name('package.prices');
+    Route::post('package/prices/update', [PackageController::class, 'updatePackagePrices'])->name('package.prices.update');
+    Route::post('package/delete-gallery-image', [PackageController::class, 'deleteGalleryImage'])->name('package.delete.gallery.image');
+
+        // Package Sub-pages (Itinerary, Inc/Exc, Equipment)
+    Route::match(['get', 'post'], 'trip/itinerary/{id}', [PackageController::class, 'tripItinerary'])->name('trip.itinerary');
+    Route::match(['get', 'post'], 'trip/incexc/{id}', [PackageController::class, 'tripIncExc'])->name('trip.incexc');
+    Route::match(['get', 'post'], 'trip/equipment/{id}', [PackageController::class, 'tripEquipment'])->name('trip.equipment');
+
+        // Standard CRUD Resource
+    Route::resource('package', PackageController::class)->except(['show']);
+
+        // Fixed Departures
+    Route::get('fixed-departures', [PackageController::class, 'fixDepature'])->name('fix-depature-package');
+    Route::post('fixed-departures/add', [PackageController::class, 'fixDepatureAdd'])->name('fix-depature-package-add');
+    Route::delete('fixed-departures/{id}', [PackageController::class, 'deleteFixDepature'])->name('delete.fix-depature-package');
+    Route::post('fixed-departures/status', [PackageController::class, 'fixDepatureStatus'])->name('fix-depature-status');
+
+
 
 
 });

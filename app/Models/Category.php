@@ -63,6 +63,12 @@ class Category extends Model
         return $this->belongsTo(Admin::class, 'updated_by');
     }
 
+
+     // Relationship with Packages
+    public function packages() {
+        return $this->belongsToMany(Package::class, 'package_categories');
+    }
+
     /**
      * Scope a query to only include active categories.
      */

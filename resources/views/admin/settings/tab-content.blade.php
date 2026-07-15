@@ -59,7 +59,7 @@
                     @php
                     $imagePath = old($field, setting($field, null));
                     $imageUrl = $imagePath && is_string($imagePath) 
-                    ? (filter_var($imagePath, FILTER_VALIDATE_URL) ? $imagePath : asset('storage/' . $imagePath))
+                    ? (filter_var($imagePath, FILTER_VALIDATE_URL) ? $imagePath : asset('images/' . $imagePath))
                     : asset('default/noimage.png');
                     @endphp
                     <img src="{{ $imageUrl }}" id="prev-{{ $field }}" class="img-fluid mh-100" style="max-height: 100px; object-fit: contain;">

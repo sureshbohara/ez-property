@@ -10,7 +10,7 @@ class PermissionService
 {
     protected array $entities = [
         'user', 'role', 'permission', 'setting', 
-        'banner', 'category', 'service', 'review', 'gallery', 'faq','team','fleet','page','blog','marketing'
+        'banner', 'category', 'service', 'review', 'gallery', 'faq','team','fleet','page','blog','marketing','package','brand','product','offer','coupon','listing','amenity'
     ];
 
     protected array $actions = ['read', 'create', 'update', 'delete'];
