@@ -4,9 +4,13 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Front\HomeController;
 use Illuminate\Support\Facades\Mail;
+use Inertia\Inertia;
 // Frontend Routes
 Route::name('front.')->group(function () {
     Route::get('/', [HomeController::class, 'homePage'])->name('home');
+    Route::get('/experience', [HomeController::class, 'experiencePage'])->name('experience');
+    Route::get('/services', [HomeController::class, 'servicesPage'])->name('services');
+    Route::get('/property/{slug}', [HomeController::class, 'propertyDetails'])->name('property.details');
     
 });
 

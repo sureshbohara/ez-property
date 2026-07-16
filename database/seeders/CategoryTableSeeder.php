@@ -164,5 +164,83 @@ class CategoryTableSeeder extends Seeder
                 ])
             );
         }
+
+
+        // ==========================================
+        // 🔑 5. MAIN CATEGORY: EXPERIENCES 
+        // ==========================================
+        $experiences = Category::updateOrCreate(
+            ['slug' => 'experiences'],
+            [
+                'parent_id' => null,
+                'name' => 'Experiences',
+                'slug' => 'experiences',
+                'excerpt' => 'Unique, hands-on activities hosted by local experts.',
+                'description' => 'Go beyond standard sightseeing. Join cooking classes, cultural workshops, adventure sports, and local guided tours curated by the people who know Nepal best.',
+                'font_icon' => 'bi-stars', 
+                'order_level' => 5,
+                'display_on' => 'default',
+                'status' => true,
+            ]
+        );
+
+        $experienceSubs = [
+            ['name' => 'Cultural Workshops', 'slug' => 'cultural-workshops', 'excerpt' => 'Learn traditional arts, crafts, and cooking from local masters.', 'order_level' => 1],
+            ['name' => 'Adventure Activities', 'slug' => 'adventure-activities', 'excerpt' => 'Paragliding, bungee jumping, rafting, and mountain biking.', 'order_level' => 2],
+            ['name' => 'Culinary Experiences', 'slug' => 'culinary-experiences', 'excerpt' => 'Taste authentic Nepali cuisine with hands-on cooking classes.', 'order_level' => 3],
+            ['name' => 'Wellness & Yoga', 'slug' => 'wellness-yoga', 'excerpt' => 'Rejuvenate your mind and body with yoga retreats and meditation.', 'order_level' => 4],
+            ['name' => 'Photography Tours', 'slug' => 'photography-tours', 'excerpt' => 'Capture the beauty of Nepal with expert local photography guides.', 'order_level' => 5],
+        ];
+
+        foreach ($experienceSubs as $sub) {
+            Category::updateOrCreate(
+                ['slug' => $sub['slug']],
+                array_merge($sub, [
+                    'parent_id' => $experiences->id,
+                    'font_icon' => 'bi-camera',
+                    'display_on' => 'default',
+                    'status' => true,
+                ])
+            );
+        }
+
+
+        // ==========================================
+        //  6. MAIN CATEGORY: SERVICES 
+        // ==========================================
+        $services = Category::updateOrCreate(
+            ['slug' => 'services'],
+            [
+                'parent_id' => null,
+                'name' => 'Services',
+                'slug' => 'services',
+                'excerpt' => 'Essential travel support to make your journey seamless.',
+                'description' => 'We provide comprehensive travel assistance including airport transfers, visa processing, equipment rentals, and professional guide/porter bookings.',
+                'font_icon' => 'bi-briefcase', 
+                'order_level' => 6,
+                'display_on' => 'default',
+                'status' => true,
+            ]
+        );
+
+        $serviceSubs = [
+            ['name' => 'Airport Transfers', 'slug' => 'airport-transfers', 'excerpt' => 'Reliable and comfortable 24/7 airport pickup and drop-off services.', 'order_level' => 1],
+            ['name' => 'Visa Assistance', 'slug' => 'visa-assistance', 'excerpt' => 'Hassle-free Nepal and Tibet visa processing support.', 'order_level' => 2],
+            ['name' => 'Equipment Rental', 'slug' => 'equipment-rental', 'excerpt' => 'High-quality trekking and climbing gear for rent.', 'order_level' => 3],
+            ['name' => 'Guide & Porter Booking', 'slug' => 'guide-porter-booking', 'excerpt' => 'Certified, experienced, and English-speaking guides and porters.', 'order_level' => 4],
+            ['name' => 'Travel Insurance Support', 'slug' => 'travel-insurance-support', 'excerpt' => 'Guidance and assistance in securing comprehensive travel insurance.', 'order_level' => 5],
+        ];
+
+        foreach ($serviceSubs as $sub) {
+            Category::updateOrCreate(
+                ['slug' => $sub['slug']],
+                array_merge($sub, [
+                    'parent_id' => $services->id,
+                    'font_icon' => 'bi-headset',
+                    'display_on' => 'default',
+                    'status' => true,
+                ])
+            );
+        }
     }
 }

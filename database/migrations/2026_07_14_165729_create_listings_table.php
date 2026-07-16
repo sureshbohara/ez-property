@@ -34,7 +34,7 @@ return new class extends Migration {
             $table->integer('bathrooms')->default(1);
             $table->enum('listing_type', [
                 'entire_home', 'private_room', 'shared_room', 
-                'homestay', 'hotel', 'resort', 'lodge', 'cabin', 'camping'
+                'homestay', 'hotel', 'resort', 'lodge', 'cabin', 'camping','service','experience'
             ])->default('entire_home');
 
             // Pricing & Rules

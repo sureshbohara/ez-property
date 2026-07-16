@@ -31,9 +31,10 @@ class ListingController extends BaseController
             'lodge'        => 'Lodge',
             'cabin'        => 'Cabin',
             'camping'      => 'Camping',
+            'experience'      => 'Experience',
+            'service'      => 'Service',
         ];
     }
-
 
     private function getCancellationPolicies(): array {
         return [

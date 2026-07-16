@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             PageTableSeeder::class,
             CategoryTableSeeder::class,
             AmenityTableSeeder::class,
+            PropertyTableSeeder::class,
         ]);
         $this->command->info("\n🎉 All RBAC seeders completed successfully!");
     }
