@@ -42,6 +42,8 @@ resources/js/
 │    │    ├── FeaturedSection.jsx
 │    │    ├── StaysNearSection.jsx
 │    │    └── HomestaysSection.jsx,RecommendedSection.jsx,TrusSection.jsx,
+     ├──PropertyDetails/
+          - PropertyHeader.jsx,PropertyGallery,PropertyOverview,PropertyAmenities,PropertyCalendar,PropertyReviews,PropertyPolicies,BookingCard
 │    │
 │    ├── PropertyCard.jsx         # Property card (Use All Home Page or Other Page)
 │

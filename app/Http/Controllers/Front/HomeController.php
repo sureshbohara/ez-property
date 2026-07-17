@@ -125,17 +125,14 @@ class HomeController extends Controller
     }
 
 
-    public function propertyDetails($slug){
+    public function propertyDetails($slug) {
         $listing = Listing::where('slug', $slug)
         ->where('status', true)
         ->with(['user', 'category', 'amenities', 'availabilities', 'pricingRules', 'reviews'])
         ->firstOrFail();
-
         $listing->increment('views');
-
-        $reviews = $listing->reviews;
+        $reviews = $listing->reviews; 
         $totalReviews = $reviews->count();
-
         if ($totalReviews > 0) {
             $avgOverall = round($reviews->avg('overall_rating'), 1);
             $avgCleanliness = round($reviews->avg('cleanliness'), 1);
@@ -146,19 +143,26 @@ class HomeController extends Controller
         } else {
             $avgOverall = $avgCleanliness = $avgAccuracy = $avgCheckIn = $avgLocation = $avgValue = 0;
         }
-
+        // Calendar Data Format
         $calendarData = [];
         foreach ($listing->availabilities as $avail) {
-            $calendarData[$avail->date] = ['status' => $avail->status, 'price' => $avail->custom_price];
+            $calendarData[$avail->date] = [
+                'status' => $avail->status, 
+                'price' => $avail->custom_price ?? $listing->base_price
+            ];
         }
-        $pricingRules = $listing->pricingRules->map(fn($r) => ['start' => $r->start_date, 'end' => $r->end_date, 'price' => $r->price_per_night]);
-
-
+        // Pricing Rules Format
+        $pricingRules = $listing->pricingRules->map(fn($r) => [
+            'start' => $r->start_date, 
+            'end' => $r->end_date, 
+            'price' => $r->price_per_night
+        ])->toArray();
         return Inertia::render('PropertyDetails', [
             'listing'        => $listing,
             'calendarData'   => $calendarData,
             'pricingRules'   => $pricingRules,
             'totalReviews'   => $totalReviews,
+            'reviews'        => $reviews->take(6), 
             'avgOverall'     => $avgOverall,
             'avgCleanliness' => $avgCleanliness,
             'avgAccuracy'    => $avgAccuracy,
