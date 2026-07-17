@@ -117,22 +117,7 @@ export default function Header() {
                         <i className="fa-solid fa-plus text-brand"></i> <span>List property</span>
                     </button>
 
-                    <div className="relative" data-dropdown-toggle>
-                        <button 
-                            onClick={(e) => toggleDropdown(e, 'language')}
-                            className="p-2.5 rounded-full hover:bg-slate-100 transition"
-                        >
-                            <i className="fa-solid fa-globe text-slate-600"></i>
-                        </button>
-                        <div className={`dropdown-menu absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden z-50 ${activeDropdown === 'language' ? 'active' : ''}`}>
-                            <div className="py-1">
-                                <a href="#" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex justify-between items-center">
-                                    <span>English</span> <i className="fa-solid fa-check text-brand text-xs"></i>
-                                </a>
-                                <a href="#" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Nepali (नेपाली)</a>
-                            </div>
-                        </div>
-                    </div>
+         
 
                     <div className="relative" data-dropdown-toggle>
                         <button 

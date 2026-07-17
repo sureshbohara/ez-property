@@ -78,20 +78,9 @@ return new class extends Migration {
             $table->timestamps();
             $table->unique(['listing_id', 'date']);
         });
-
-        Schema::create('pricing_rules', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('listing_id')->constrained()->cascadeOnDelete();
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->decimal('price_per_night', 10, 2);
-            $table->integer('minimum_nights')->nullable();
-            $table->timestamps();
-        });
     }
 
     public function down(): void {
-        Schema::dropIfExists('pricing_rules');
         Schema::dropIfExists('availabilities');
         Schema::dropIfExists('amenity_listing');
         Schema::dropIfExists('listings');

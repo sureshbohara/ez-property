@@ -23,7 +23,7 @@
 
         @canany(['listing.read', 'amenity.read'])
         <li class="menu-label">Property & Listings</li>
-        <li class="{{ request()->routeIs(['listing.listing.*', 'listing.amenity.*', 'listing.pricing-rules.*', 'listing.availabilities.*']) ? 'mm-active' : '' }}">
+        <li class="{{ request()->routeIs(['listing.listing.*', 'listing.amenity.*','listing.availabilities.*']) ? 'mm-active' : '' }}">
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class="bi bi-buildings"></i></div>
                 <div class="menu-title">Listings Manager</div>
@@ -33,9 +33,7 @@
                 <li class="{{ request()->routeIs('listing.listing.*') ? 'mm-active' : '' }}">
                     <a href="{{ route('listing.listing.index') }}"><i class="bi bi-house-door"></i> All Listings</a>
                 </li>
-                <li class="{{ request()->routeIs('listing.pricing-rules.*') ? 'mm-active' : '' }}">
-                    <a href="{{ route('listing.pricing-rules.index') }}"><i class="bi bi-currency-exchange"></i> Pricing Rules</a>
-                </li>
+           
                 <li class="{{ request()->routeIs('listing.availabilities.*') ? 'mm-active' : '' }}">
                     <a href="{{ route('listing.availabilities.index') }}"><i class="bi bi-calendar-check"></i> Availabilities</a>
                 </li>

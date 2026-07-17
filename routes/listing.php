@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Listing\ListingController;
 use App\Http\Controllers\Listing\AmenityController;
-use App\Http\Controllers\Listing\PricingRuleController;
 use App\Http\Controllers\Listing\AvailabilityController;
 Route::prefix('admin/listing')->middleware(['auth:admin'])->name('listing.')->group(function () {
     // ─── Amenities ───────────────────────────────
@@ -17,10 +16,7 @@ Route::prefix('admin/listing')->middleware(['auth:admin'])->name('listing.')->gr
     Route::post('listing/type', [ListingController::class, 'updateListingType'])->name('listing.type');
     Route::resource('listing', ListingController::class)->except(['show']);
 
-    // ─── Pricing Rules ─────────────────────
-    Route::get('pricing-rules', [PricingRuleController::class, 'index'])->name('pricing-rules.index');
-    Route::post('pricing-rules', [PricingRuleController::class, 'store'])->name('pricing-rules.store');
-    Route::delete('pricing-rules/{id}', [PricingRuleController::class, 'destroy'])->name('pricing-rules.destroy');
+
 
     // ─── Availabilities ────────────────────
     Route::get('availabilities', [AvailabilityController::class, 'index'])->name('availabilities.index');

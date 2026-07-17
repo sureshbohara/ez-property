@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🏡 Ez Property
 
 A modern, full-stack property rental and booking platform inspired by Airbnb, tailored for the Nepali market. Built with Laravel, React (Inertia.js), and Tailwind CSS, it provides a seamless experience for both guests and hosts.
@@ -36,3 +37,4 @@ A modern, full-stack property rental and booking platform inspired by Airbnb, ta
 - **Tools**: Vite, Axios, Laravel Breeze (Authentication)
 
 ---
+

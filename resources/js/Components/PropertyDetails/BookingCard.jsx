@@ -1,18 +1,74 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 
-export default function BookingCard({ listing }) {
-    const [guests, setGuests] = useState({ adults: 1, children: 0 });
-    const [showGuestDropdown, setShowGuestDropdown] = useState(false);
-
+export default function BookingCard({ 
+    listing, 
+    calendarData, 
+    checkIn, 
+    checkOut, 
+    onDateFieldClick,
+    guests,
+    setGuests,
+    showGuestDropdown,
+    setShowGuestDropdown
+}) {
     const totalGuests = guests.adults + guests.children;
-    const pricePerNight = parseFloat(listing.base_price) || 0;
+    const basePrice = parseFloat(listing.base_price) || 0;
     const cleaningFee = parseFloat(listing.cleaning_fee) || 0;
     const serviceFee = parseFloat(listing.service_fee) || 0;
-    
-    // Demo calculation (2 nights)
-    const nights = 2; 
-    const totalNightsPrice = pricePerNight * nights;
-    const grandTotal = totalNightsPrice + cleaningFee + serviceFee;
+
+    const pricingDetails = useMemo(() => {
+        if (!checkIn || !checkOut) {
+            return { 
+                nights: 0,
+                totalNightsPrice: 0,
+                grandTotal: 0,
+                hasBlockedDates: false,
+                avgPricePerNight: basePrice,
+                hasSpecialPricing: false
+            };
+        }
+
+        const start = new Date(checkIn);
+        const end = new Date(checkOut);
+        let totalNightsPrice = 0;
+        let nights = 0;
+        let hasBlockedDates = false;
+        let hasSpecialPricing = false;
+
+        let currentDate = new Date(start);
+
+        while (currentDate < end) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const dayData = calendarData?.[dateStr];
+            
+            // 1. Check if date is blocked or booked
+            if (dayData && (dayData.status === 'blocked' || dayData.status === 'booked')) {
+                hasBlockedDates = true;
+            }
+
+            // 2. Determine Price: Custom Price OR Base Price
+            let dailyPrice = basePrice;
+            if (dayData && dayData.price) {
+                dailyPrice = parseFloat(dayData.price);
+                hasSpecialPricing = true;
+            }
+
+            totalNightsPrice += dailyPrice;
+            nights++;
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        const avgPricePerNight = nights > 0 ? totalNightsPrice / nights : basePrice;
+
+        return {
+            nights,
+            totalNightsPrice,
+            grandTotal: totalNightsPrice + cleaningFee + serviceFee,
+            hasBlockedDates,
+            avgPricePerNight,
+            hasSpecialPricing
+        };
+    }, [checkIn, checkOut, listing, calendarData, basePrice, cleaningFee, serviceFee]);
 
     const updateGuests = (type, change) => {
         const newValue = guests[type] + change;
@@ -20,25 +76,48 @@ export default function BookingCard({ listing }) {
         else if (type === 'children' && newValue >= 0 && newValue <= 10) setGuests({...guests, children: newValue});
     };
 
+    const formatDate = (dateStr) => {
+        if (!dateStr) return "Add dates";
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+
+    const displayPrice = checkIn && checkOut && pricingDetails.nights > 0
+        ? Math.round(pricingDetails.avgPricePerNight) 
+        : basePrice;
+
     return (
-        <div className="sticky top-24 border border-slate-200 rounded-2xl shadow-xl p-6 bg-white">
+        <div className="sticky top-24 z-30 border border-slate-200 rounded-2xl shadow-xl p-6 bg-white">
             <div className="flex items-baseline justify-between mb-6">
                 <div>
-                    <span className="text-2xl font-bold text-dark">Rs. {pricePerNight.toLocaleString()}</span>
+                    <span className="text-2xl font-bold text-dark">Rs. {displayPrice.toLocaleString()}</span>
                     <span className="text-slate-600"> / night</span>
+                    
+                    {pricingDetails.hasSpecialPricing && checkIn && checkOut && (
+                        <div className="mt-1 text-xs text-brand font-medium flex items-center gap-1">
+                            <i className="fa-solid fa-tag"></i> Special rate applied
+                        </div>
+                    )}
                 </div>
             </div>
 
+            {pricingDetails.hasBlockedDates && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-2">
+                    <i className="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                    <span>Some selected dates are unavailable. Please choose different dates.</span>
+                </div>
+            )}
+
             <div className="relative mb-4">
-                <div className="border border-slate-300 rounded-xl overflow-hidden">
+                <div className="border border-slate-300 rounded-xl">
                     <div className="grid grid-cols-2 border-b border-slate-300">
-                        <div className="p-3 border-r border-slate-300 cursor-pointer hover:bg-slate-50 transition">
+                        <div className="p-3 border-r border-slate-300 cursor-pointer hover:bg-slate-50 transition" onClick={onDateFieldClick}>
                             <label className="block text-[10px] font-bold text-dark uppercase tracking-wide">Check-in</label>
-                            <input type="text" value="Add dates" className="w-full text-sm text-slate-700 outline-none bg-transparent cursor-pointer font-medium mt-1" readOnly />
+                            <input type="text" value={formatDate(checkIn)} className="w-full text-sm text-slate-700 outline-none bg-transparent cursor-pointer font-medium mt-1" readOnly />
                         </div>
-                        <div className="p-3 cursor-pointer hover:bg-slate-50 transition">
+                        <div className="p-3 cursor-pointer hover:bg-slate-50 transition" onClick={onDateFieldClick}>
                             <label className="block text-[10px] font-bold text-dark uppercase tracking-wide">Checkout</label>
-                            <input type="text" value="Add dates" className="w-full text-sm text-slate-700 outline-none bg-transparent cursor-pointer font-medium mt-1" readOnly />
+                            <input type="text" value={formatDate(checkOut)} className="w-full text-sm text-slate-700 outline-none bg-transparent cursor-pointer font-medium mt-1" readOnly />
                         </div>
                     </div>
                     <div className="p-3 cursor-pointer hover:bg-slate-50 transition border-t border-slate-300" onClick={() => setShowGuestDropdown(!showGuestDropdown)}>
@@ -59,9 +138,9 @@ export default function BookingCard({ listing }) {
                                     <div className="text-xs text-slate-500">Ages 13 or above</div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <button className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center hover:border-brand hover:text-brand transition" onClick={() => updateGuests('adults', -1)}><i className="fa-solid fa-minus text-xs"></i></button>
+                                    <button className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center hover:border-brand hover:text-brand transition" onClick={(e) => { e.stopPropagation(); updateGuests('adults', -1); }}><i className="fa-solid fa-minus text-xs"></i></button>
                                     <span className="w-6 text-center font-medium text-dark text-sm">{guests.adults}</span>
-                                    <button className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center hover:border-brand hover:text-brand transition" onClick={() => updateGuests('adults', 1)}><i className="fa-solid fa-plus text-xs"></i></button>
+                                    <button className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center hover:border-brand hover:text-brand transition" onClick={(e) => { e.stopPropagation(); updateGuests('adults', 1); }}><i className="fa-solid fa-plus text-xs"></i></button>
                                 </div>
                             </div>
                             <div className="flex items-center justify-between py-2">
@@ -70,9 +149,9 @@ export default function BookingCard({ listing }) {
                                     <div className="text-xs text-slate-500">Ages 2-12</div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <button className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center hover:border-brand hover:text-brand transition" onClick={() => updateGuests('children', -1)}><i className="fa-solid fa-minus text-xs"></i></button>
+                                    <button className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center hover:border-brand hover:text-brand transition" onClick={(e) => { e.stopPropagation(); updateGuests('children', -1); }}><i className="fa-solid fa-minus text-xs"></i></button>
                                     <span className="w-6 text-center font-medium text-dark text-sm">{guests.children}</span>
-                                    <button className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center hover:border-brand hover:text-brand transition" onClick={() => updateGuests('children', 1)}><i className="fa-solid fa-plus text-xs"></i></button>
+                                    <button className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center hover:border-brand hover:text-brand transition" onClick={(e) => { e.stopPropagation(); updateGuests('children', 1); }}><i className="fa-solid fa-plus text-xs"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -80,29 +159,40 @@ export default function BookingCard({ listing }) {
                 )}
             </div>
             
-            <button className="w-full bg-gradient-to-r from-brand to-brand-hover hover:from-brand-hover hover:to-brand text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-brand/20 active:scale-[0.98] flex items-center justify-center gap-2">
+            <button 
+                disabled={pricingDetails.hasBlockedDates || !checkIn || !checkOut}
+                className={`w-full font-bold py-3.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 ${
+                    pricingDetails.hasBlockedDates || !checkIn || !checkOut 
+                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none' 
+                    : 'bg-gradient-to-r from-brand to-brand-hover hover:from-brand-hover hover:to-brand text-white shadow-brand/20 active:scale-[0.98]'
+                }`}
+            >
                 Reserve <i className="fa-solid fa-arrow-right text-xs"></i>
             </button>
             <p className="text-center text-xs text-slate-500 mt-3">You won't be charged yet</p>
 
-            <div className="mt-6 space-y-3 text-sm text-slate-700">
-                <div className="flex justify-between underline decoration-slate-300 underline-offset-4">
-                    <span>Rs. {pricePerNight} x {nights} nights</span>
-                    <span className="font-medium">Rs. {totalNightsPrice.toLocaleString()}</span>
+            {checkIn && checkOut && pricingDetails.nights > 0 && (
+                <div className="mt-6 space-y-3 text-sm text-slate-700">
+                    <div className="flex justify-between underline decoration-slate-300 underline-offset-4">
+                        <span>
+                            Rs. {displayPrice.toLocaleString()} × {pricingDetails.nights} night{pricingDetails.nights > 1 ? 's' : ''}
+                        </span>
+                        <span className="font-medium">Rs. {pricingDetails.totalNightsPrice.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between underline decoration-slate-300 underline-offset-4">
+                        <span>Cleaning fee</span>
+                        <span className="font-medium">Rs. {cleaningFee.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between underline decoration-slate-300 underline-offset-4">
+                        <span>Service fee</span>
+                        <span className="font-medium">Rs. {serviceFee.toLocaleString()}</span>
+                    </div>
+                    <div className="border-t border-slate-200 pt-4 mt-4 flex justify-between font-bold text-dark text-lg">
+                        <span>Total</span>
+                        <span>Rs. {pricingDetails.grandTotal.toLocaleString()}</span>
+                    </div>
                 </div>
-                <div className="flex justify-between underline decoration-slate-300 underline-offset-4">
-                    <span>Cleaning fee</span>
-                    <span className="font-medium">Rs. {cleaningFee.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between underline decoration-slate-300 underline-offset-4">
-                    <span>Service fee</span>
-                    <span className="font-medium">Rs. {serviceFee.toLocaleString()}</span>
-                </div>
-                <div className="border-t border-slate-200 pt-4 mt-4 flex justify-between font-bold text-dark text-lg">
-                    <span>Total</span>
-                    <span>Rs. {grandTotal.toLocaleString()}</span>
-                </div>
-            </div>
+            )}
         </div>
     );
 }

@@ -1,29 +1,30 @@
 import React, { useState } from 'react';
 
-export default function PropertyCalendar({ listing, calendarData, pricingRules }) {
+export default function PropertyCalendar({ 
+    listing, 
+    calendarData, 
+    checkIn,
+    setCheckIn,
+    checkOut,
+    setCheckOut
+}) {
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [checkIn, setCheckIn] = useState(null);
-    const [checkOut, setCheckOut] = useState(null);
 
     const changeMonth = (offset) => {
         setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1));
     };
 
     const getPriceForDate = (dateStr) => {
-        // 1. Check Pricing Rules first
-        const rule = pricingRules?.find(r => dateStr >= r.start && dateStr <= r.end);
-        if (rule) return rule.price;
-        
-        // 2. Check Calendar Availability data
-        if (calendarData && calendarData[dateStr]) {
-            return calendarData[dateStr].price || listing.base_price;
+        const dayData = calendarData?.[dateStr];
+        if (dayData && dayData.price) {
+            return dayData.price;
         }
-        // 3. Fallback to base price
         return listing.base_price;
     };
 
     const isAvailable = (dateStr) => {
-        if (calendarData && calendarData[dateStr] && calendarData[dateStr].status === 'blocked') {
+        const dayData = calendarData?.[dateStr];
+        if (dayData && (dayData.status === 'blocked' || dayData.status === 'booked')) {
             return false;
         }
         return true;
