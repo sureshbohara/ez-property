@@ -57,3 +57,9 @@ resources/js/
 
 app.blade.php is 
 
+
+<!-- Already Exist Repo For Github -->
+
+git add .
+git commit -m "Resolve merge conflicts"
+git push origin main

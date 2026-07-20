@@ -125,11 +125,11 @@ class HomeController extends Controller
     }
 
 
-     public function propertyDetails($slug) {
+    public function propertyDetails($slug) {
         $listing = Listing::where('slug', $slug)
-            ->where('status', true)
-            ->with(['user', 'category', 'amenities', 'availabilities', 'reviews'])
-            ->firstOrFail();
+        ->where('status', true)
+        ->with(['user', 'category', 'amenities', 'availabilities', 'reviews'])
+        ->firstOrFail();
         $listing->increment('views');
         $reviews = $listing->reviews; 
         $totalReviews = $reviews->count();
@@ -163,6 +163,64 @@ class HomeController extends Controller
             'avgCheckIn'     => $avgCheckIn,
             'avgLocation'    => $avgLocation,
             'avgValue'       => $avgValue,
+        ]);
+    }
+
+
+    public function searchPage(Request $request) {
+        $location = $request->get('location');
+        $checkIn = $request->get('checkIn');
+        $checkOut = $request->get('checkOut');
+        $adults = (int) $request->get('adults', 0);
+        $children = (int) $request->get('children', 0);
+        $totalGuests = $adults + $children;
+        
+        $selectedType = $request->get('type', 'all');
+        $propertyTypes = $this->getPropertyTypes();
+
+        $baseQuery = Listing::where('status', true)->with(['category', 'amenities', 'reviews']);
+
+        // Location Filter
+        if ($location) {
+            $baseQuery->where(function($q) use ($location) {
+                $q->where('city', 'like', "%{$location}%")
+                ->orWhere('province', 'like', "%{$location}%")
+                ->orWhere('title', 'like', "%{$location}%");
+            });
+        }
+
+        // Guest Capacity Filter
+        if ($totalGuests > 0) {
+            $baseQuery->where('guests', '>=', $totalGuests);
+        }
+
+        //  DATE FILTER - Check-in / Check-out
+        if ($checkIn && $checkOut) {
+            $baseQuery->whereDoesntHave('availabilities', function ($query) use ($checkIn, $checkOut) {
+                $query->whereBetween('date', [$checkIn, $checkOut])
+                ->whereIn('status', ['blocked', 'booked']);
+            });
+        }
+
+        // Property Type Filter
+        if ($selectedType !== 'all' && array_key_exists($selectedType, $propertyTypes)) {
+            $baseQuery->where('listing_type', $selectedType);
+        }
+
+        $searchResults = $baseQuery->orderBy('order_level', 'desc')->paginate(15)->withQueryString();
+
+        return Inertia::render('SearchListing', [
+            'searchResults' => $searchResults,
+            'searchParams' => [
+                'location' => $location,
+                'checkIn' => $checkIn,
+                'checkOut' => $checkOut,
+                'adults' => $adults,
+                'children' => $children,
+            ],
+            'propertyTypes' => $propertyTypes,
+            'selectedType' => $selectedType,
+            'popularDestinations' => $this->getPopularDestinations(),
         ]);
     }
 

@@ -11,6 +11,8 @@ Route::name('front.')->group(function () {
     Route::get('/experience', [HomeController::class, 'experiencePage'])->name('experience');
     Route::get('/services', [HomeController::class, 'servicesPage'])->name('services');
     Route::get('/property/{slug}', [HomeController::class, 'propertyDetails'])->name('property.details');
+
+    Route::get('/search', [HomeController::class, 'searchPage'])->name('property.search');
     
 });
 

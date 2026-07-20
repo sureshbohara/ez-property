@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { router } from '@inertiajs/react';
+
 export default function SearchSection({ popularDestinations = [] }) {
     const [isMobileExpanded, setIsMobileExpanded] = useState(false);
     const [activeSection, setActiveSection] = useState(null);
@@ -18,6 +20,7 @@ export default function SearchSection({ popularDestinations = [] }) {
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
     }, []);
+
     const toggleSection = (e, section) => {
         e.stopPropagation();
         setActiveSection(activeSection === section ? null : section);
@@ -57,9 +60,11 @@ export default function SearchSection({ popularDestinations = [] }) {
             }
         }
     };
+
     const changeMonth = (offset) => {
         setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1));
     };
+
     const generateCalendar = (year, month) => {
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const firstDay = new Date(year, month, 1).getDay();
@@ -96,14 +101,26 @@ export default function SearchSection({ popularDestinations = [] }) {
         }
         return days;
     };
+
     const displayDateText = checkIn && checkOut 
         ? `${formatDate(checkIn)} - ${formatDate(checkOut)}` 
         : (checkIn ? `${formatDate(checkIn)} - Add dates` : 'Add dates');
 
+    //  Search Functionality
+    const handleSearch = (e) => {
+        e.preventDefault();
+        const params = new URLSearchParams();
+        if (whereValue) params.append('location', whereValue);
+        if (checkIn) params.append('checkIn', checkIn.toISOString().split('T')[0]);
+        if (checkOut) params.append('checkOut', checkOut.toISOString().split('T')[0]);
+        if (guests.adults > 0) params.append('adults', guests.adults);
+        if (guests.children > 0) params.append('children', guests.children);
+        
+        router.get(`/search?${params.toString()}`);
+    };
     return (
         <section className="bg-slate-50 relative z-40 px-4 sm:px-6 lg:px-8 pt-4 pb-4 search-container">
             <div className="max-w-[1536px] mx-auto flex justify-center">
-                
                 {!isMobileExpanded && (
                     <button 
                         onClick={() => setIsMobileExpanded(true)}
@@ -127,7 +144,6 @@ export default function SearchSection({ popularDestinations = [] }) {
                     ${isMobileExpanded ? 'block md:hidden w-full rounded-2xl p-4' : 'hidden'}
                     md:flex md:w-full md:max-w-[840px] md:items-center md:rounded-full
                 `}>
-                    
                     {isMobileExpanded && (
                         <div className="md:hidden flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
                             <h3 className="font-bold text-lg text-dark">Search Stays</h3>
@@ -136,26 +152,16 @@ export default function SearchSection({ popularDestinations = [] }) {
                             </button>
                         </div>
                     )}
+
                     <div className="relative flex-1 px-4 md:px-6 py-3 md:py-3 text-left border-b md:border-b-0 md:border-r border-slate-200" onClick={(e) => toggleSection(e, 'where')}>
                         <label className="block text-xs font-bold text-dark mb-1">Where</label>
                         <input type="text" placeholder="Search destinations" value={whereValue} onChange={(e) => setWhereValue(e.target.value)} className="w-full text-sm text-slate-600 outline-none bg-transparent truncate placeholder-slate-400" />
-                        
                         <div className={`dropdown-menu absolute top-full left-0 right-0 md:right-auto mt-2 w-full md:w-[680px] max-w-[90vw] bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 ${activeSection === 'where' ? 'active' : ''}`}>
                             <div className="p-4 md:p-5">
                                 <h3 className="text-sm font-bold text-dark mb-3 md:mb-4">Popular destinations in Nepal</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    
-
                                     {popularDestinations.map(({ city, desc, icon, color }) => (
-                                        <button
-                                            key={city}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setWhereValue(city);
-                                                setActiveSection(null);
-                                            }}
-                                            className="flex items-center gap-3 md:gap-4 p-3 rounded-xl hover:bg-slate-50 transition text-left border border-transparent hover:border-slate-100 w-full"
-                                        >
+                                        <button key={city} onClick={(e) => { e.stopPropagation(); setWhereValue(city); setActiveSection(null); }} className="flex items-center gap-3 md:gap-4 p-3 rounded-xl hover:bg-slate-50 transition text-left border border-transparent hover:border-slate-100 w-full">
                                             <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl bg-${color}-50 flex items-center justify-center shrink-0`}>
                                                 <i className={`fa-solid ${icon} text-${color}-500 text-lg`}></i>
                                             </div>
@@ -165,7 +171,6 @@ export default function SearchSection({ popularDestinations = [] }) {
                                             </div>
                                         </button>
                                     ))}
-
                                 </div>
                             </div>
                         </div>
@@ -174,30 +179,19 @@ export default function SearchSection({ popularDestinations = [] }) {
                     <div className="relative flex-1 px-4 md:px-6 py-3 md:py-3 text-left border-b md:border-b-0 md:border-r border-slate-200" onClick={(e) => toggleSection(e, 'when')}>
                         <label className="block text-xs font-bold text-dark mb-1">When</label>
                         <input type="text" value={displayDateText} className="w-full text-sm text-slate-600 outline-none bg-transparent truncate placeholder-slate-400" readOnly />
-                        
                         <div className={`dropdown-menu absolute top-full left-0 right-0 mt-2 w-full md:w-[680px] max-w-[90vw] bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 p-4 md:p-6 ${activeSection === 'when' ? 'active' : ''}`} onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center justify-between mb-4">
                                 <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-slate-100 rounded-full transition"><i className="fa-solid fa-chevron-left text-slate-600"></i></button>
-                                <h3 className="font-semibold text-dark text-center flex-1">
-                                    {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                                </h3>
+                                <h3 className="font-semibold text-dark text-center flex-1">{currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
                                 <button onClick={() => changeMonth(1)} className="p-2 hover:bg-slate-100 rounded-full transition"><i className="fa-solid fa-chevron-right text-slate-600"></i></button>
                             </div>
-                            
                             <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                                {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (
-                                    <div key={d} className="text-xs font-semibold text-slate-400 uppercase tracking-wider py-2">{d}</div>
-                                ))}
+                                {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (<div key={d} className="text-xs font-semibold text-slate-400 uppercase tracking-wider py-2">{d}</div>))}
                             </div>
-                            <div className="grid grid-cols-7 gap-1">
-                                {generateCalendar(currentDate.getFullYear(), currentDate.getMonth())}
-                            </div>
-
+                            <div className="grid grid-cols-7 gap-1">{generateCalendar(currentDate.getFullYear(), currentDate.getMonth())}</div>
                             {(checkIn || checkOut) && (
                                 <div className="mt-4 pt-4 border-t border-slate-100 text-center">
-                                    <button onClick={() => { setCheckIn(null); setCheckOut(null); }} className="text-sm font-bold underline text-slate-500 hover:text-dark transition">
-                                        Clear dates
-                                    </button>
+                                    <button onClick={() => { setCheckIn(null); setCheckOut(null); }} className="text-sm font-bold underline text-slate-500 hover:text-dark transition">Clear dates</button>
                                 </div>
                             )}
                         </div>
@@ -208,7 +202,6 @@ export default function SearchSection({ popularDestinations = [] }) {
                             <label className="block text-xs font-bold text-dark mb-1">Who</label>
                             <input type="text" value={getGuestLabel()} className="w-full text-sm text-slate-600 outline-none bg-transparent truncate placeholder-slate-400" readOnly />
                         </div>
-                        
                         <div className={`dropdown-menu absolute top-full right-0 mt-2 w-full md:w-[380px] max-w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 p-4 md:p-5 ${activeSection === 'guests' ? 'active' : ''}`} onClick={(e) => e.stopPropagation()}>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between py-2 border-b border-slate-100">
@@ -236,7 +229,8 @@ export default function SearchSection({ popularDestinations = [] }) {
                             </div>
                         </div>
 
-                        <button className="bg-brand hover:bg-brand-hover text-white rounded-full p-3 transition-all active:scale-95 flex items-center justify-center shrink-0">
+                        {/* 🔑 NEW: Search Button with handleSearch */}
+                        <button onClick={handleSearch} className="bg-brand hover:bg-brand-hover text-white rounded-full p-3 transition-all active:scale-95 flex items-center justify-center shrink-0">
                             <i className="fa-solid fa-magnifying-glass text-base"></i>
                         </button>
                     </div>
