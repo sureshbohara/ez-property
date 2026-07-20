@@ -22,7 +22,7 @@ createInertiaApp({
         root.render(
             <>
                 <App {...props} />
-                <Toaster position="top-right" />
+                <Toaster position="top-right" reverseOrder={false} />
             </>
         );
     },

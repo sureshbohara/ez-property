@@ -10,6 +10,7 @@ use App\Models\Category;
 
 class HomeController extends Controller
 {
+
     private function getPropertyTypes(): array {
         return [
             'all'          => ['label' => 'All', 'icon' => 'fa-solid fa-border-all'],
@@ -25,7 +26,6 @@ class HomeController extends Controller
         ];
     }
 
-
     private function getPopularDestinations(): array {
         return [
             ['city' => 'Kathmandu', 'desc' => 'Capital city', 'icon' => 'fa-place-of-worship', 'color' => 'orange'],
@@ -40,11 +40,30 @@ class HomeController extends Controller
         ];
     }
 
+    private function getListingCardColumns(): array {
+        return [
+            'id',
+            'slug',
+            'title',
+            'image', 
+            'listing_type',
+            'instant_bookable',
+            'city',
+            'province',
+            'base_price',
+            'minimum_nights',
+            'category_id'
+        ];
+    }
+
     public function homePage(Request $request) {
         $propertyTypes = $this->getPropertyTypes();
         $selectedType = $request->get('type', 'all');
+        $columns = $this->getListingCardColumns();
 
-        $baseQuery = Listing::where('status', true)->with(['category', 'amenities']);
+        $baseQuery = Listing::select($columns)
+            ->where('status', true)
+            ->with(['reviews' => fn($q) => $q->select('listing_id', 'overall_rating')]); 
         
         if ($selectedType !== 'all' && array_key_exists($selectedType, $propertyTypes)) {
             $baseQuery->where('listing_type', $selectedType);
@@ -54,16 +73,18 @@ class HomeController extends Controller
         $homestays = (clone $baseQuery)->where('display_on', 'homestays')->take(10)->get();
         $nearby = (clone $baseQuery)->where('display_on', 'nearby')->take(10)->get();
         $recommended = (clone $baseQuery)->where('display_on', 'recommended')->inRandomOrder()->take(15)->get();
+        
         $categories = Category::where('status', true)->orderBy('order_level', 'asc')->get();
+
         return Inertia::render('Home', [
-            'propertyTypes'      => $propertyTypes,
+            'propertyTypes'       => $propertyTypes,
             'popularDestinations' => $this->getPopularDestinations(),
-            'selectedType'       => $selectedType,
-            'categories'         => $categories,
-            'featuredProperties' => $featuredProperties,
-            'homestays'          => $homestays,
-            'nearby'             => $nearby,
-            'recommended'        => $recommended,
+            'selectedType'        => $selectedType,
+            'categories'          => $categories,
+            'featuredProperties'  => $featuredProperties,
+            'homestays'           => $homestays,
+            'nearby'              => $nearby,
+            'recommended'         => $recommended,
         ]);
     }
 
@@ -71,17 +92,18 @@ class HomeController extends Controller
     public function experiencePage(Request $request){
         $propertyTypes = $this->getPropertyTypes();
         $selectedType = $request->get('type', 'all');
+        $columns = $this->getListingCardColumns();
+        
         $experienceCategory = Category::where('slug', 'experiences')->first();
-        $categoryIds = [];
-        if ($experienceCategory) {
-            $categoryIds = array_merge(
-                [$experienceCategory->id],
-                $experienceCategory->getAllDescendantIds()
-            );
+        $categoryIds = $experienceCategory ? array_merge([$experienceCategory->id], $experienceCategory->getAllDescendantIds()) : [];
+
+        $baseQuery = Listing::select($columns)
+            ->where('status', true)
+            ->with(['reviews' => fn($q) => $q->select('listing_id', 'overall_rating')]);
+
+        if (!empty($categoryIds)) {
+            $baseQuery->whereIn('category_id', $categoryIds);
         }
-        $baseQuery = Listing::where('status', true)
-        ->with(['category', 'amenities'])
-        ->whereIn('category_id', $categoryIds);
 
         if ($selectedType !== 'all' && array_key_exists($selectedType, $propertyTypes)) {
             $baseQuery->where('listing_type', $selectedType);
@@ -90,9 +112,9 @@ class HomeController extends Controller
         $experiences = $baseQuery->inRandomOrder()->get();
 
         return Inertia::render('Experience', [
-            'experiences' => $experiences,
-            'propertyTypes' => $propertyTypes,
-            'selectedType' => $selectedType,
+            'experiences'         => $experiences,
+            'propertyTypes'       => $propertyTypes,
+            'selectedType'        => $selectedType,
             'popularDestinations' => $this->getPopularDestinations(),
         ]);
     }
@@ -100,36 +122,39 @@ class HomeController extends Controller
     public function servicesPage(Request $request) {
         $propertyTypes = $this->getPropertyTypes();
         $selectedType = $request->get('type', 'all');
+        $columns = $this->getListingCardColumns();
+
         $servicesCategory = Category::where('slug', 'services')->first();
-        $categoryIds = [];
-        if ($servicesCategory) {
-            $categoryIds = array_merge(
-                [$servicesCategory->id],
-                $servicesCategory->getAllDescendantIds()
-            );
+        $categoryIds = $servicesCategory ? array_merge([$servicesCategory->id], $servicesCategory->getAllDescendantIds()) : [];
+
+        $baseQuery = Listing::select($columns)
+            ->where('status', true)
+            ->with(['reviews' => fn($q) => $q->select('listing_id', 'overall_rating')]);
+
+        if (!empty($categoryIds)) {
+            $baseQuery->whereIn('category_id', $categoryIds);
         }
-        $baseQuery = Listing::where('status', true)
-        ->with(['category', 'amenities'])
-        ->whereIn('category_id', $categoryIds);
 
         if ($selectedType !== 'all' && array_key_exists($selectedType, $propertyTypes)) {
             $baseQuery->where('listing_type', $selectedType);
         }
+
         $services = $baseQuery->inRandomOrder()->get();
+
         return Inertia::render('Services', [
-            'services' => $services,
-            'propertyTypes' => $propertyTypes,
-            'selectedType' => $selectedType,
+            'services'            => $services,
+            'propertyTypes'       => $propertyTypes,
+            'selectedType'        => $selectedType,
             'popularDestinations' => $this->getPopularDestinations(),
         ]);
     }
 
-
     public function propertyDetails($slug) {
         $listing = Listing::where('slug', $slug)
-        ->where('status', true)
-        ->with(['user', 'category', 'amenities', 'availabilities', 'reviews'])
-        ->firstOrFail();
+            ->where('status', true)
+            ->with(['user', 'category', 'amenities', 'availabilities', 'reviews'])
+            ->firstOrFail();
+            
         $listing->increment('views');
         $reviews = $listing->reviews; 
         $totalReviews = $reviews->count();
@@ -144,6 +169,7 @@ class HomeController extends Controller
         } else {
             $avgOverall = $avgCleanliness = $avgAccuracy = $avgCheckIn = $avgLocation = $avgValue = 0;
         }
+
         $calendarData = [];
         foreach ($listing->availabilities as $avail) {
             $dateKey = \Carbon\Carbon::parse($avail->date)->format('Y-m-d');
@@ -152,6 +178,7 @@ class HomeController extends Controller
                 'price' => $avail->custom_price ? (float) $avail->custom_price : null
             ];
         }
+
         return Inertia::render('PropertyDetails', [
             'listing'        => $listing,
             'calendarData'   => $calendarData,
@@ -166,7 +193,6 @@ class HomeController extends Controller
         ]);
     }
 
-
     public function searchPage(Request $request) {
         $location = $request->get('location');
         $checkIn = $request->get('checkIn');
@@ -177,32 +203,31 @@ class HomeController extends Controller
         
         $selectedType = $request->get('type', 'all');
         $propertyTypes = $this->getPropertyTypes();
+        $columns = $this->getListingCardColumns();
 
-        $baseQuery = Listing::where('status', true)->with(['category', 'amenities', 'reviews']);
+        $baseQuery = Listing::select($columns)
+            ->where('status', true)
+            ->with(['reviews' => fn($q) => $q->select('listing_id', 'overall_rating')]);
 
-        // Location Filter
         if ($location) {
             $baseQuery->where(function($q) use ($location) {
                 $q->where('city', 'like', "%{$location}%")
-                ->orWhere('province', 'like', "%{$location}%")
-                ->orWhere('title', 'like', "%{$location}%");
+                  ->orWhere('province', 'like', "%{$location}%")
+                  ->orWhere('title', 'like', "%{$location}%");
             });
         }
 
-        // Guest Capacity Filter
         if ($totalGuests > 0) {
             $baseQuery->where('guests', '>=', $totalGuests);
         }
 
-        //  DATE FILTER - Check-in / Check-out
         if ($checkIn && $checkOut) {
             $baseQuery->whereDoesntHave('availabilities', function ($query) use ($checkIn, $checkOut) {
                 $query->whereBetween('date', [$checkIn, $checkOut])
-                ->whereIn('status', ['blocked', 'booked']);
+                      ->whereIn('status', ['blocked', 'booked']);
             });
         }
 
-        // Property Type Filter
         if ($selectedType !== 'all' && array_key_exists($selectedType, $propertyTypes)) {
             $baseQuery->where('listing_type', $selectedType);
         }
@@ -210,18 +235,17 @@ class HomeController extends Controller
         $searchResults = $baseQuery->orderBy('order_level', 'desc')->paginate(15)->withQueryString();
 
         return Inertia::render('SearchListing', [
-            'searchResults' => $searchResults,
-            'searchParams' => [
+            'searchResults'       => $searchResults,
+            'searchParams'        => [
                 'location' => $location,
                 'checkIn' => $checkIn,
                 'checkOut' => $checkOut,
                 'adults' => $adults,
                 'children' => $children,
             ],
-            'propertyTypes' => $propertyTypes,
-            'selectedType' => $selectedType,
+            'propertyTypes'       => $propertyTypes,
+            'selectedType'        => $selectedType,
             'popularDestinations' => $this->getPopularDestinations(),
         ]);
     }
-
 }
