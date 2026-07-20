@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { formatPrice } from '../../Utils/helpers';
 
 export default function PropertyCalendar({ 
     listing, 
@@ -10,8 +11,28 @@ export default function PropertyCalendar({
 }) {
     const [currentDate, setCurrentDate] = useState(new Date());
 
-    const changeMonth = (offset) => {
-        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1));
+
+    const [currency, setCurrency] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('selectedCurrency') || 'NPR';
+        }
+        return 'NPR';
+    });
+
+    useEffect(() => {
+        const handleCurrencyChange = () => {
+            setCurrency(localStorage.getItem('selectedCurrency') || 'NPR');
+        };
+        window.addEventListener('currencyChanged', handleCurrencyChange);
+        return () => window.removeEventListener('currencyChanged', handleCurrencyChange);
+    }, []);
+
+
+    const formatCurrency = (amount) => {
+        const val = parseFloat(amount) || 0;
+        if (currency === 'USD') return `$${(val * 0.0075).toFixed(2)}`;
+        if (currency === 'INR') return `₹${Math.round(val * 0.625)}`;
+        return formatPrice(val); 
     };
 
     const getPriceForDate = (dateStr) => {
@@ -75,7 +96,8 @@ export default function PropertyCalendar({
             days.push(
                 <div key={d} className={classes} onClick={() => (!isPast && available) && handleDateClick(dateStr)}>
                     <span>{d}</span>
-                    {(!isPast && available) && <span className="text-[9px] font-semibold text-brand mt-0.5">Rs.{price}</span>}
+                    {/* 🔑 3. Formatted Daily Price Display */}
+                    {(!isPast && available) && <span className="text-[9px] font-semibold text-brand mt-0.5">{formatCurrency(price)}</span>}
                 </div>
             );
         }

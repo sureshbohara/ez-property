@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { formatPrice } from '../../Utils/helpers';
 
 export default function BookingCard({ 
     listing, 
@@ -11,6 +12,30 @@ export default function BookingCard({
     showGuestDropdown,
     setShowGuestDropdown
 }) {
+
+    const [currency, setCurrency] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('selectedCurrency') || 'NPR';
+        }
+        return 'NPR';
+    });
+
+    useEffect(() => {
+        const handleCurrencyChange = () => {
+            setCurrency(localStorage.getItem('selectedCurrency') || 'NPR');
+        };
+        window.addEventListener('currencyChanged', handleCurrencyChange);
+        return () => window.removeEventListener('currencyChanged', handleCurrencyChange);
+    }, []);
+
+
+    const formatCurrency = (amount) => {
+        const val = parseFloat(amount) || 0;
+        if (currency === 'USD') return `$${(val * 0.0075).toFixed(2)}`;
+        if (currency === 'INR') return `₹${Math.round(val * 0.625)}`;
+        return formatPrice(val); 
+    };
+
     const totalGuests = guests.adults + guests.children;
     const basePrice = parseFloat(listing.base_price) || 0;
     const cleaningFee = parseFloat(listing.cleaning_fee) || 0;
@@ -41,12 +66,10 @@ export default function BookingCard({
             const dateStr = currentDate.toISOString().split('T')[0];
             const dayData = calendarData?.[dateStr];
             
-            // 1. Check if date is blocked or booked
             if (dayData && (dayData.status === 'blocked' || dayData.status === 'booked')) {
                 hasBlockedDates = true;
             }
 
-            // 2. Determine Price: Custom Price OR Base Price
             let dailyPrice = basePrice;
             if (dayData && dayData.price) {
                 dailyPrice = parseFloat(dayData.price);
@@ -83,14 +106,15 @@ export default function BookingCard({
     };
 
     const displayPrice = checkIn && checkOut && pricingDetails.nights > 0
-        ? Math.round(pricingDetails.avgPricePerNight) 
+        ? pricingDetails.avgPricePerNight 
         : basePrice;
 
     return (
         <div className="sticky top-24 z-30 border border-slate-200 rounded-2xl shadow-xl p-6 bg-white">
             <div className="flex items-baseline justify-between mb-6">
                 <div>
-                    <span className="text-2xl font-bold text-dark">Rs. {displayPrice.toLocaleString()}</span>
+       
+                    <span className="text-2xl font-bold text-dark">{formatCurrency(displayPrice)}</span>
                     <span className="text-slate-600"> / night</span>
                     
                     {pricingDetails.hasSpecialPricing && checkIn && checkOut && (
@@ -175,21 +199,21 @@ export default function BookingCard({
                 <div className="mt-6 space-y-3 text-sm text-slate-700">
                     <div className="flex justify-between underline decoration-slate-300 underline-offset-4">
                         <span>
-                            Rs. {displayPrice.toLocaleString()} × {pricingDetails.nights} night{pricingDetails.nights > 1 ? 's' : ''}
+                            {formatCurrency(displayPrice)} × {pricingDetails.nights} night{pricingDetails.nights > 1 ? 's' : ''}
                         </span>
-                        <span className="font-medium">Rs. {pricingDetails.totalNightsPrice.toLocaleString()}</span>
+                        <span className="font-medium">{formatCurrency(pricingDetails.totalNightsPrice)}</span>
                     </div>
                     <div className="flex justify-between underline decoration-slate-300 underline-offset-4">
                         <span>Cleaning fee</span>
-                        <span className="font-medium">Rs. {cleaningFee.toLocaleString()}</span>
+                        <span className="font-medium">{formatCurrency(cleaningFee)}</span>
                     </div>
                     <div className="flex justify-between underline decoration-slate-300 underline-offset-4">
                         <span>Service fee</span>
-                        <span className="font-medium">Rs. {serviceFee.toLocaleString()}</span>
+                        <span className="font-medium">{formatCurrency(serviceFee)}</span>
                     </div>
                     <div className="border-t border-slate-200 pt-4 mt-4 flex justify-between font-bold text-dark text-lg">
                         <span>Total</span>
-                        <span>Rs. {pricingDetails.grandTotal.toLocaleString()}</span>
+                        <span>{formatCurrency(pricingDetails.grandTotal)}</span>
                     </div>
                 </div>
             )}

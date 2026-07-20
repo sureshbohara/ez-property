@@ -17,7 +17,7 @@ class ListingRequest extends FormRequest
 
     public function authorize(): bool 
     { 
-        return auth('admin')->check(); 
+        return true; 
     }
 
     public function rules(): array 

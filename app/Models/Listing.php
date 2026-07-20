@@ -56,5 +56,16 @@ class Listing extends Model {
     public function reviews() { return $this->hasMany(ListingReview::class, 'listing_id')->approved()->latestFirst(); }
 
     public function getImageUrlAttribute(): string { return $this->resolveImage($this->image); }
+
+
+
+    // The host (owner) of the listing
+    public function host() {return $this->belongsTo(User::class, 'user_id');}
+    // All bookings made for this listing
+    public function bookings() { return $this->hasMany(Booking::class, 'listing_id');}
+    // All messages related to this listing
+    public function messages() { return $this->hasMany(Message::class, 'listing_id');}
+
+
     
 }

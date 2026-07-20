@@ -62,8 +62,8 @@ class HomeController extends Controller
         $columns = $this->getListingCardColumns();
 
         $baseQuery = Listing::select($columns)
-            ->where('status', true)
-            ->with(['reviews' => fn($q) => $q->select('listing_id', 'overall_rating')]); 
+        ->where('status', true)
+        ->with(['reviews' => fn($q) => $q->select('listing_id', 'overall_rating')]); 
         
         if ($selectedType !== 'all' && array_key_exists($selectedType, $propertyTypes)) {
             $baseQuery->where('listing_type', $selectedType);
@@ -98,8 +98,8 @@ class HomeController extends Controller
         $categoryIds = $experienceCategory ? array_merge([$experienceCategory->id], $experienceCategory->getAllDescendantIds()) : [];
 
         $baseQuery = Listing::select($columns)
-            ->where('status', true)
-            ->with(['reviews' => fn($q) => $q->select('listing_id', 'overall_rating')]);
+        ->where('status', true)
+        ->with(['reviews' => fn($q) => $q->select('listing_id', 'overall_rating')]);
 
         if (!empty($categoryIds)) {
             $baseQuery->whereIn('category_id', $categoryIds);
@@ -128,8 +128,8 @@ class HomeController extends Controller
         $categoryIds = $servicesCategory ? array_merge([$servicesCategory->id], $servicesCategory->getAllDescendantIds()) : [];
 
         $baseQuery = Listing::select($columns)
-            ->where('status', true)
-            ->with(['reviews' => fn($q) => $q->select('listing_id', 'overall_rating')]);
+        ->where('status', true)
+        ->with(['reviews' => fn($q) => $q->select('listing_id', 'overall_rating')]);
 
         if (!empty($categoryIds)) {
             $baseQuery->whereIn('category_id', $categoryIds);
@@ -151,10 +151,10 @@ class HomeController extends Controller
 
     public function propertyDetails($slug) {
         $listing = Listing::where('slug', $slug)
-            ->where('status', true)
-            ->with(['user', 'category', 'amenities', 'availabilities', 'reviews'])
-            ->firstOrFail();
-            
+        ->where('status', true)
+        ->with(['user', 'category', 'amenities', 'availabilities', 'reviews'])
+        ->firstOrFail();
+
         $listing->increment('views');
         $reviews = $listing->reviews; 
         $totalReviews = $reviews->count();
@@ -206,14 +206,14 @@ class HomeController extends Controller
         $columns = $this->getListingCardColumns();
 
         $baseQuery = Listing::select($columns)
-            ->where('status', true)
-            ->with(['reviews' => fn($q) => $q->select('listing_id', 'overall_rating')]);
+        ->where('status', true)
+        ->with(['reviews' => fn($q) => $q->select('listing_id', 'overall_rating')]);
 
         if ($location) {
             $baseQuery->where(function($q) use ($location) {
                 $q->where('city', 'like', "%{$location}%")
-                  ->orWhere('province', 'like', "%{$location}%")
-                  ->orWhere('title', 'like', "%{$location}%");
+                ->orWhere('province', 'like', "%{$location}%")
+                ->orWhere('title', 'like', "%{$location}%");
             });
         }
 
@@ -224,7 +224,7 @@ class HomeController extends Controller
         if ($checkIn && $checkOut) {
             $baseQuery->whereDoesntHave('availabilities', function ($query) use ($checkIn, $checkOut) {
                 $query->whereBetween('date', [$checkIn, $checkOut])
-                      ->whereIn('status', ['blocked', 'booked']);
+                ->whereIn('status', ['blocked', 'booked']);
             });
         }
 
@@ -248,4 +248,10 @@ class HomeController extends Controller
             'popularDestinations' => $this->getPopularDestinations(),
         ]);
     }
+
+
+
+ 
+    
+
 }

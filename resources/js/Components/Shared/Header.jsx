@@ -93,9 +93,12 @@ export default function Header() {
                 </div>
 
                 <div className="flex items-center gap-2 md:gap-3">
-                    <button className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-full text-sm font-semibold hover:shadow-md transition">
+                    <Link 
+                        href={user ? "/properties/create" : "/login"} 
+                        className="hidden md:flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-full text-sm font-semibold hover:shadow-md transition"
+                    >
                         <i className="fa-solid fa-plus text-brand"></i> <span>List property</span>
-                    </button>
+                    </Link>
 
              
                     <div className="relative" data-dropdown-toggle>

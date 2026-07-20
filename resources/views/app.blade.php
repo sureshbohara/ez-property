@@ -32,6 +32,9 @@
         <meta name="keywords" content="{{ $siteSetting['meta_keywords'] }}">
     @endif
 
+
+
+
     @viteReactRefresh
     @vite(['resources/js/app.jsx', 'resources/css/app.css'])
     @inertiaHead
