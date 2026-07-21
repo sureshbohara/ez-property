@@ -6,16 +6,6 @@ git push
 
 
 
-git commit -m "feat: Implement Dashboard, Chat System, and Saved Properties
-
-- Added role-based Dashboard (Host/Guest) with Overview, Bookings, Reviews, and Settings tabs.
-- Implemented real-time-like Chat/Messaging system with Unread count badges.
-- Integrated Bookings into Chat (auto-create conversations for booked properties).
-- Added Saved Properties (Wishlist) functionality with toggle heart icon.
-- Fixed Chart.js rendering issues and Inertia form data handling.
-- Optimized Eloquent queries for better performance."
-
-
 
 
 

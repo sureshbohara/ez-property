@@ -297,4 +297,12 @@ class HomeController extends Controller
  
     
 
+    public function faqsPage() {
+     $faqs = \App\Models\Faq::active()->ordered()->get();
+     return Inertia::render('Faqs', [
+        'faqs' => $faqs
+    ]);
+    }
+
+
 }

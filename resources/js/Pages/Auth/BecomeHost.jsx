@@ -1,9 +1,11 @@
 import React from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import toast from 'react-hot-toast';
 import FrontLayout from '@/Layouts/FrontLayout';
 
 export default function BecomeHost() {
+    const { setting } = usePage().props;
+    
     const { data, setData, post, processing } = useForm({
         agreeTerms: false,
     });
@@ -16,7 +18,6 @@ export default function BecomeHost() {
             return;
         }
 
-
         post('/become-host', {
             onSuccess: (page) => {
                 if (page.props.flash.success) {
@@ -26,12 +27,19 @@ export default function BecomeHost() {
         });
     };
 
-    const hostSteps = [
-        { title: 'Upgrade Your Account', desc: 'Click the button below to unlock host features and dashboard access.' },
-        { title: 'List Your Property', desc: 'Add your property details, location, amenities, and high-quality photos.' },
-        { title: 'Set Your Rules & Price', desc: 'Define your house rules, check-in/out times, and set competitive nightly rates.' },
-        { title: 'Welcome Your Guests', desc: 'Once approved, your listing goes live. Start receiving bookings and earning income!' }
+
+    const defaultSteps = [
+        { title: 'Upgrade Your Account', content: 'Click the button below to unlock host features and dashboard access.' },
+        { title: 'List Your Property', content: 'Add your property details, location, amenities, and high-quality photos.' },
+        { title: 'Set Your Rules & Price', content: 'Define your house rules, check-in/out times, and set competitive nightly rates.' },
+        { title: 'Welcome Your Guests', content: 'Once approved, your listing goes live. Start receiving bookings and earning income!' }
     ];
+
+    const workItems = setting?.work_item;
+    const hostSteps = Array.isArray(workItems) && workItems.length > 0 ? workItems : defaultSteps;
+    
+
+    const bgImage = setting?.bg_image_url || "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&q=80";
 
     return (
         <FrontLayout>
@@ -39,10 +47,10 @@ export default function BecomeHost() {
             
             <div className="min-h-[calc(100vh-80px)] grid md:grid-cols-2 bg-slate-50">
 
-            
+           
                 <div className="relative hidden md:block">
                     <img 
-                        src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&q=80" 
+                        src={bgImage} 
                         alt="Host Home" 
                         className="absolute inset-0 w-full h-full object-cover"
                     />
@@ -60,10 +68,9 @@ export default function BecomeHost() {
                     </div>
                 </div>
 
-             
+       
                 <div className="flex flex-col justify-center items-center w-full p-6 sm:p-10 lg:p-12 relative overflow-y-auto">
 
-              
                     <Link 
                         href="/" 
                         className="md:hidden absolute top-4 left-6 inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-brand transition group"
@@ -82,7 +89,7 @@ export default function BecomeHost() {
                             Ready to earn from your property? Upgrade your account now to access the host dashboard and create your first listing in minutes.
                         </p>
 
-                      
+                       
                         <div className="mb-6 bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-sm">
                             <h3 className="text-base font-semibold text-slate-800 mb-4">How it works:</h3>
 
@@ -94,7 +101,7 @@ export default function BecomeHost() {
                                         </span>
                                         <div>
                                             <h4 className="font-semibold text-slate-800 text-sm sm:text-base">{step.title}</h4>
-                                            <p className="text-slate-500 text-xs sm:text-sm mt-0.5 leading-snug">{step.desc}</p>
+                                            <p className="text-slate-500 text-xs sm:text-sm mt-0.5 leading-snug">{step.content}</p>
                                         </div>
                                     </li>
                                 ))}
@@ -102,7 +109,6 @@ export default function BecomeHost() {
                         </div>
 
                         <form onSubmit={submit}>
-                            {/* Terms and Conditions Checkbox */}
                             <div className="flex items-start mb-5">
                                 <input
                                     id="agreeTerms"
@@ -115,27 +121,12 @@ export default function BecomeHost() {
 
                                 <label htmlFor="agreeTerms" className="ml-2 block text-sm text-slate-600 cursor-pointer leading-relaxed">
                                     I have read and agree to the EzProperty{' '}
-                                    
-                  
-                                    <Link 
-                                        href="/pages/terms-conditions" 
-                                        className="font-semibold text-brand hover:underline"
-                                    > 
-                                        Host Terms & Conditions 
-                                    </Link> {' '} 
-
+                                    <Link href="/pages/terms-conditions" className="font-semibold text-brand hover:underline">Host Terms & Conditions</Link> {' '} 
                                     and {' '}
-
-                                    <Link 
-                                        href="/pages/privacy-policy" 
-                                        className="font-semibold text-brand hover:underline"
-                                    > 
-                                        Privacy Policy 
-                                    </Link>.
+                                    <Link href="/pages/privacy-policy" className="font-semibold text-brand hover:underline">Privacy Policy</Link>.
                                 </label>
                             </div>
 
-                        
                             <button
                                 type="submit"
                                 disabled={processing || !data.agreeTerms}

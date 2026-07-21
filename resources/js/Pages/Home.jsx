@@ -8,7 +8,6 @@ import StaysNearSection from '../Components/HomeSections/StaysNearSection';
 import HomestaysSection from '../Components/HomeSections/HomestaysSection';
 import RecommendedSection from '../Components/HomeSections/RecommendedSection';
 import TrustSection from '../Components/HomeSections/TrustSection';
-
 export default function Home({propertyTypes,popularDestinations,selectedType,categories,featuredProperties,homestays,nearby,recommended}) {
     return (
         <>

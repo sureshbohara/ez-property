@@ -13,22 +13,22 @@ class SettingTableSeeder extends Seeder
             ['id' => 1],
             [
                 // --- General Info ---
-                'system_name' => 'White Transportation LLC',
-                'email' => 'info@whitetransportllc.com',
-                'extra_email' => null,
-                'phone' => '(504) 327-6880',
-                'extra_phone' => null, 
-                'address' => 'New Orleans, LA',
-                'opening_hr' => '24/7 Service',
-                'work_hours' => 'Providing premium black car and luxury services since 2010.',
-                'footer_copyright' => '© ' . date('Y') . ' White Transportation LLC. All Rights Reserved.',
-                'google_map' => null, 
+                'system_name' => 'Ez Property',
+                'email' => 'support@ezproperty.com',
+                'extra_email' => 'booking@ezproperty.com',
+                'phone' => '+977-1-XXXXXXX',
+                'extra_phone' => '+977-98XXXXXXXX', 
+                'address' => 'Kathmandu, Nepal',
+                'opening_hr' => 'Sun - Fri: 9AM - 6PM',
+                'work_hours' => 'Your gateway to authentic Nepali hospitality.',
+                'footer_copyright' => '© ' . date('Y') . ' Ez Property. All Rights Reserved.',
+                'google_map' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.0284987496536!2d85.32405831506056!3d27.717245933190117!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb19a8b5b88e43%3A0x6d64b8f8b8b8b8b8!2sKathmandu!5e0!3m2!1sen!2snp!4v1620000000000', 
 
                 // --- Social Links ---
-                'facebook' => null,
-                'twitter'  => null,
-                'linkedin' => null,
-                'instagram'=> null,
+                'facebook' => 'https://facebook.com/ezproperty',
+                'twitter'  => 'https://twitter.com/ezproperty',
+                'linkedin' => 'https://linkedin.com/company/ezproperty',
+                'instagram'=> 'https://instagram.com/ezproperty',
                 'youtube'  => null,
                 'google'   => null,
                 'yelp'     => null,
@@ -40,35 +40,34 @@ class SettingTableSeeder extends Seeder
                 'footer_gateway_img' => null,
                 'bg_image' => null,
                 'breadcrumb' => null,
-                'image1'   => null,
+                'image1'   => null, 
                 'image2'   => null,
 
                 // --- SEO Meta Data ---
-                'meta_author' => 'White Transportation LLC',
-                'meta_title'  => 'White Transportation LLC | Premier Luxury Transportation in New Orleans',
-                'meta_keywords' => 'luxury transportation, black car service, New Orleans airport transfer, corporate transfers, hourly charter',
-                'meta_description' => 'Experience premium luxury transportation in New Orleans, LA with White Transportation LLC. Offering airport transfers, corporate travel, hourly charters, and special occasion black car & SUV services.',
+                'meta_author' => 'Ez Property',
+                'meta_title'  => 'Ez Property | Find Premium Homestays & Rentals in Nepal',
+                'meta_keywords' => 'nepal property, homestay nepal, kathmandu apartment, pokhara rental, nepal travel, book hotel nepal',
+                'meta_description' => 'Discover authentic Nepali hospitality with Ez Property. Book premium homestays, city apartments, and mountain retreats across Nepal.',
 
                 // --- Info Texts (About Us Content) ---
-                'info1' => 'Your Premier Luxury Transportation Service provider in New Orleans, LA',
-                'info2' => 'Founded in New Orleans, Louisiana, White Transportation LLC is dedicated to redefining luxury travel with our premium black car services. With a fleet featuring the sophisticated Black Sedan and spacious SUVs, we cater to discerning clients seeking unparalleled comfort and reliability.',
-                'info3' => 'Our mission is to elevate every journey—whether it’s an airport transfer to MSY, GPT, or BTR, a corporate trip, or a special occasion—by combining impeccable service, professional chauffeurs, and a commitment to excellence.',
-                'info4' => '15% discount to senior citizens and veterans',
-                'info5' => 'Easy Booking Process',
-                'info6' => '15+ Years of Experience',
+                'info1' => 'Your Gateway to Authentic Nepali Hospitality',
+                'info2' => 'Founded in Kathmandu, Ez Property is dedicated to connecting travelers with unique homes, breathtaking landscapes, and genuine local experiences.',
+                'info3' => 'Our mission is to empower local communities by providing a platform that promotes sustainable tourism, making authentic Nepali homestays accessible to the world.',
+                'info4' => 'Your gateway to authentic Nepali hospitality. Find your perfect mountain retreat, city apartment, or jungle lodge.',
+                'info5' => 'Secure Online Payments',
+                'info6' => '24/7 Local Support',
                 'info7' => null,
 
                  // --- SMTP / Mail ---
                 'mail_transport' => 'smtp',
                 'mail_host' => 'smtp.gmail.com',
                 'mail_port' => '587',
-                'mail_username' => 'ezbooking42@gmail.com',
-                'mail_password' => 'uqxr fnvu uznf zisi',
+                'mail_username' => 'your_email@gmail.com',
+                'mail_password' => 'your_app_password',
                 'mail_encryption' => 'tls',
-                'mail_from' => 'info@whitetransportllc.com',
-                'mail_from_name' => 'White Transportation LLC',
+                'mail_from' => 'noreply@ezproperty.com',
+                'mail_from_name' => 'Ez Property',
                 'smtp_check' => true,
-
 
                 // --- ReCaptcha ---
                 'recaptcha_site_key' => '', 
@@ -91,90 +90,83 @@ class SettingTableSeeder extends Seeder
                 'is_google' => false,
 
             
-                'process_title' => 'Why Choose White Transportation LLC?',
-                'process_sub_title' => 'Experience the difference with our premium services',
-                'process_item' => json_encode([
+         
+                'process_title' => 'Why Choose Ez Property?',
+                'process_sub_title' => 'Experience the best of Nepal with our trusted platform',
+                'process_item' => ([
                     [
-                        'icon' => 'bi bi-person-badge',
-                        'title' => 'Professional Chauffeurs',
-                        'content' => 'Our chauffeurs ensure safe, punctual, and courteous transportation tailored to your needs.'
+                        'icon' => 'fa-solid fa-shield-halved',
+                        'title' => 'Verified Listings',
+                        'content' => 'Every property is checked to ensure what you see is exactly what you get.'
                     ],
                     [
-                        'icon' => 'bi bi-star-fill',
-                        'title' => 'Impeccable Service',
-                        'content' => 'We provide impeccable service, ensuring every detail is handled with precision and care.'
+                        'icon' => 'fa-solid fa-credit-card',
+                        'title' => 'Secure Payments',
+                        'content' => 'Book with peace of mind using our secure and reliable payment gateways.'
                     ],
                     [
-                        'icon' => 'bi bi-gem',
-                        'title' => 'Legacy of Luxury',
-                        'content' => 'We embody a legacy of luxury, crafting every ride into a refined, extravagant experience.'
+                        'icon' => 'fa-solid fa-headset',
+                        'title' => 'Local Support',
+                        'content' => 'Our local team is always ready to assist you during your stay in Nepal.'
                     ],
                     [
-                        'icon' => 'bi bi-car-front-fill',
-                        'title' => 'Luxury Fleet Selection',
-                        'content' => 'We have a luxury fleet, featuring meticulously curated vehicles for unmatched style and comfort.'
+                        'icon' => 'fa-solid fa-house-chimney-heart',
+                        'title' => 'Authentic Experience',
+                        'content' => 'Connect with local hosts and experience the true warmth of Nepali culture.'
                     ]
                 ]),
 
        
-                'work_title' => 'Our Services',
-                'work_sub_title' => 'Premium Transportation Solutions Tailored to Your Needs',
-                'work_item' => json_encode([
+       
+                'work_title' => 'Become a Host',
+                'work_sub_title' => 'Ready to earn from your property? Upgrade your account now to access the host dashboard and create your first listing in minutes.',
+                'work_item' => ([
                     [
-                        'icon' => 'fas fa-plane-departure',
-                        'title' => 'Airport Transfers',
-                        'content' => 'Experience stress-free travel with our premium airport transfer service to MSY, GPT, or BTR. Our luxurious black cars & SUVs ensure a comfortable and timely journey.'
+                        'icon' => 'fa-solid fa-user-plus',
+                        'title' => 'Upgrade Your Account',
+                        'content' => 'Click the button below to unlock host features and dashboard access.'
                     ],
                     [
-                        'icon' => 'fas fa-briefcase',
-                        'title' => 'Corporate Transfers',
-                        'content' => 'Elevate your business travel with our tailored corporate transfer service, designed for professionals who value efficiency and sophistication.'
+                        'icon' => 'fa-solid fa-list-check',
+                        'title' => 'List Your Property',
+                        'content' => 'Add your property details, location, amenities, and high-quality photos.'
                     ],
                     [
-                        'icon' => 'fas fa-clock',
-                        'title' => 'Hourly Transfers',
-                        'content' => 'Enjoy ultimate flexibility with our hourly charter service, perfect for a night out, special events, or exploring New Orleans in luxury.'
+                        'icon' => 'fa-solid fa-sliders',
+                        'title' => 'Set Your Rules & Price',
+                        'content' => 'Define your house rules, check-in/out times, and set competitive nightly rates.'
                     ],
                     [
-                        'icon' => 'fas fa-route',
-                        'title' => 'Point To Point Transfers',
-                        'content' => 'For direct, hassle-free travel, our point-to-point transfer service delivers luxury and reliability from one destination to another.'
-                    ],
-                    [
-                        'icon' => 'fas fa-champagne-glasses',
-                        'title' => 'Special Occasion',
-                        'content' => 'Make your milestone moments unforgettable with our special occasion transportation service. Our professional chauffeurs ensure every detail is perfect.'
-                    ],
-                    [
-                        'icon' => 'fas fa-user-tie',
-                        'title' => 'Hire A Chauffeur',
-                        'content' => 'For those seeking personalized transportation, our hire-a-chauffeur service offers the ultimate in flexibility and luxury for your day.'
+                        'icon' => 'fa-solid fa-door-open',
+                        'title' => 'Welcome Your Guests',
+                        'content' => 'Once approved, your listing goes live. Start receiving bookings and earning income!'
                     ]
                 ]),
 
              
-                'counter_title' => 'Why Ride With Us',
-                'counter_sub_title' => 'Commitment to Excellence Since 2010',
-                'counter_item' => json_encode([
+          
+                'counter_title' => 'Why Book With Us',
+                'counter_sub_title' => 'Trusted by Travelers Across the Globe',
+                'counter_item' => ([
                     [
-                        'icon' => 'bi bi-calendar-check',
+                        'icon' => 'fa-solid fa-building',
+                        'title' => '500+',
+                        'content' => 'Properties Listed'
+                    ],
+                    [
+                        'icon' => 'fa-solid fa-users',
+                        'title' => '10K+',
+                        'content' => 'Happy Travelers'
+                    ],
+                    [
+                        'icon' => 'fa-solid fa-location-dot',
                         'title' => '15+',
-                        'content' => 'Years of Experience'
+                        'content' => 'Cities Covered'
                     ],
                     [
-                        'icon' => 'bi bi-clock-history',
-                        'title' => '24/7',
-                        'content' => 'Service Available'
-                    ],
-                    [
-                        'icon' => 'bi bi-percent',
-                        'title' => '15%',
-                        'content' => 'Senior & Veteran Discount'
-                    ],
-                    [
-                        'icon' => 'bi bi-hand-thumbs-up',
-                        'title' => '100%',
-                        'content' => 'Satisfaction Guaranteed'
+                        'icon' => 'fa-solid fa-star',
+                        'title' => '4.8',
+                        'content' => 'Average Rating'
                     ]
                 ]),
             ]

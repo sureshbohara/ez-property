@@ -19,6 +19,8 @@ Route::name('front.')->group(function () {
     Route::get('/search', [HomeController::class, 'searchPage'])->name('property.search');
     
     Route::get('/pages/{slug}', [CmsPageController::class, 'cmsPage'])->name('cms.pages');
+    Route::get('/faqs', [HomeController::class, 'faqsPage'])->name('faqs');
+    Route::post('/contact-submit', [HomeController::class, 'submitContactForm'])->name('contact.submit');
 
 
   

@@ -6,6 +6,10 @@ import Breadcrumb from '../Components/Shared/Breadcrumb';
 export default function CmsPage({ page, metaTitle, metaDescription, metaKeywords }) {
     const pageTitle = page?.title || 'Page';
 
+    const updatedDate = page?.updated_at 
+        ? new Date(page.updated_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        : null;
+
     return (
         <>
             <Head title={metaTitle || pageTitle}>
@@ -18,14 +22,11 @@ export default function CmsPage({ page, metaTitle, metaDescription, metaKeywords
                 <Breadcrumb items={[{ title: 'Home', url: '/' }, { title: pageTitle, url: '' }]} />
                 
                 <div className="bg-white min-h-screen">
-                    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-8 sm:py-10">
+                    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-3 py-4 sm:py-5">
                         
-          
-                        <div className="mb-10 border-b border-slate-200 pb-8">
-                            <span className="inline-block px-3 py-1 bg-brand/10 text-brand text-xs font-bold uppercase tracking-wider rounded-full mb-4">
-                                EzProperty
-                            </span>
-                            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
+    
+                        <div className="mb-10 border-b border-slate-200 pb-4">
+                            <h1 className="text-2xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mb-4">
                                 {pageTitle}
                             </h1>
                             
@@ -36,7 +37,7 @@ export default function CmsPage({ page, metaTitle, metaDescription, metaKeywords
                             )}
                         </div>
 
-                
+                   
                         {page?.content && (
                             <article 
                                 className="prose prose-lg max-w-none 
@@ -51,12 +52,14 @@ export default function CmsPage({ page, metaTitle, metaDescription, metaKeywords
                             />
                         )}
 
-                   
-                        <div className="mt-12 pt-8 border-t border-slate-200 text-center">
-                            <p className="text-sm text-slate-400">
-                                Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                            </p>
-                        </div>
+            
+                        {updatedDate && (
+                            <div className="mt-12 pt-8 border-t border-slate-200 text-center">
+                                <p className="text-sm text-slate-400">
+                                    Last updated: {updatedDate}
+                                </p>
+                            </div>
+                        )}
 
                     </div>
                 </div>

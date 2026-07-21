@@ -18,6 +18,24 @@ class CmsPageController extends Controller
         $metaDescription = $page->meta_description ?: ($setting->meta_description ?? 'EzProperty CMS Page.');
         $metaKeywords    = $page->meta_keywords ?: ($setting->meta_keywords ?? '');
         $pageImage = $page->image ? Storage::url($page->image) : asset('default/noimage.png');
+
+         if ($slug === 'about-us') {
+            return Inertia::render('AboutUs', [
+                'page'             => $page,
+                'metaTitle'        => $metaTitle,
+                'metaDescription'  => $metaDescription,
+            ]);
+        }
+
+
+          if ($slug === 'contact-us') {
+            return Inertia::render('ContactUs', [
+                'page'             => $page,
+                'metaTitle'        => $metaTitle,
+                'metaDescription'  => $metaDescription,
+            ]);
+        }
+        
         return Inertia::render('CmsPage', [
             'page'             => $page,
             'setting'          => $setting,
