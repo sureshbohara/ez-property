@@ -101,8 +101,11 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'gender' => 'nullable|string|max:20',
+            'details' => 'nullable|string|max:1000',
         ]);
-        $data = $request->only('name', 'email', 'phone', 'address');
+
+        $data = $request->only('name', 'email', 'phone', 'address', 'gender', 'details');
         if ($request->hasFile('image')) {
             if ($user->image && !filter_var($user->image, FILTER_VALIDATE_URL)) {
                 $this->mediaService->deleteImageVariants($user->image);
@@ -112,7 +115,7 @@ class UserController extends Controller
             $data['image'] = $path;
         }
         $user->update($data);
-        return back()->with('success', 'Profile updated successfully!');
+
     }
 
 
@@ -128,7 +131,6 @@ class UserController extends Controller
             ]);
         }
         $user->update(['password' => Hash::make($request->password)]);
-        return back()->with('success', 'Password changed successfully!');
     }
     
 }

@@ -11,8 +11,7 @@ class Listing extends Model {
     use HasFactory, Slugable, HasImages;
 
     protected $fillable = [
-        'user_id', 'category_id', 'title', 'slug', 'description', 'address', 'city', 'province', 'country',
-        'latitude', 'longitude', 'image', 'gallery', 'highlight_key',
+        'user_id', 'category_id', 'title', 'slug', 'description', 'address', 'city', 'province', 'country', 'image', 'gallery', 'highlight_key',
         'guests', 'bedrooms', 'beds', 'bathrooms', 'display_on',
         'listing_type', 'base_price', 'cleaning_fee', 'service_fee', 'minimum_nights', 'cancellation_policy',
         'instant_bookable', 'status', 'views', 'order_level', 'meta_title', 'meta_description'
@@ -21,8 +20,6 @@ class Listing extends Model {
     protected $casts = [
         'gallery' => 'array',
         'highlight_key' => 'array',
-        'latitude' => 'decimal:7', 
-        'longitude' => 'decimal:7',
         'base_price' => 'decimal:2', 
         'cleaning_fee' => 'decimal:2', 
         'service_fee' => 'decimal:2',
@@ -65,6 +62,8 @@ class Listing extends Model {
     public function bookings() { return $this->hasMany(Booking::class, 'listing_id');}
     // All messages related to this listing
     public function messages() { return $this->hasMany(Message::class, 'listing_id');}
+
+    public function savedByUsers() {return $this->belongsToMany(User::class, 'saved_listings')->withTimestamps();}
 
 
     

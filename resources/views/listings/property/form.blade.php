@@ -29,8 +29,6 @@
                                     <x-input-field type="text" name="city" label="City" :value="old('city', $listing?->city ?? '')" cols="col-md-4" required/>
                                     <x-input-field type="text" name="province" label="Province/State" :value="old('province', $listing?->province ?? '')" cols="col-md-4" required/>
                                     <x-input-field type="text" name="country" label="Country" :value="old('country', $listing?->country ?? 'Nepal')" cols="col-md-4" required/>
-                                    <x-input-field type="number" name="latitude" label="Latitude" :value="old('latitude', $listing?->latitude ?? '')" cols="col-md-6" step="any" placeholder="e.g., 27.7172"/>
-                                    <x-input-field type="number" name="longitude" label="Longitude" :value="old('longitude', $listing?->longitude ?? '')" cols="col-md-6" step="any" placeholder="e.g., 85.3240"/>
                                 </div>
 
                                 <h5 class="card-title mb-3 mt-4 border-bottom pb-2">Amenities</h5>

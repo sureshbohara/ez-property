@@ -14,9 +14,12 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->string('image')->nullable();
-            $table->enum('role', ['guest', 'host', 'admin'])->default('guest');
+            $table->string('address')->nullable();
+            $table->string('gender')->nullable();
+            $table->longText('details')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('role', ['guest', 'host', 'admin'])->default('guest');
             $table->rememberToken();
             $table->timestamps();
         });

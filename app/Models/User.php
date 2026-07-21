@@ -11,7 +11,7 @@ class User extends Authenticatable
     use Notifiable, HasImages;
 
     protected $fillable = [
-        'name', 'email', 'phone', 'address', 'image', 'role', 'password',
+        'name', 'email', 'phone', 'address','gender','details', 'image', 'role', 'password',
     ];
 
     protected $hidden = [
@@ -40,4 +40,10 @@ class User extends Authenticatable
     public function listings() {
         return $this->hasMany(Listing::class, 'user_id');
     }
+
+   public function savedListings() {
+     return $this->belongsToMany(Listing::class, 'saved_listings')->withTimestamps();
+   }
+   
+
 }

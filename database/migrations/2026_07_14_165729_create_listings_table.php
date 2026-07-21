@@ -19,8 +19,6 @@ return new class extends Migration {
             $table->string('city');
             $table->string('province');
             $table->string('country')->default('Nepal');
-            $table->decimal('latitude', 10, 7)->nullable();
-            $table->decimal('longitude', 10, 7)->nullable();
 
             // Media
             $table->string('image')->nullable();

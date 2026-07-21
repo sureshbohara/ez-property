@@ -4,7 +4,6 @@ import { Link, usePage } from '@inertiajs/react';
 export default function Header() {
     const [activeDropdown, setActiveDropdown] = useState(null);
     const { url, props } = usePage(); 
-    
     const user = props.auth?.user || null;
 
     const [currency, setCurrency] = useState(() => {
@@ -94,21 +93,18 @@ export default function Header() {
 
                 <div className="flex items-center gap-2 md:gap-3">
                     <Link 
-                        href={user ? "/properties/create" : "/login"} 
+                        href={user ? "/my-listings" : "/login"} 
                         className="hidden md:flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-full text-sm font-semibold hover:shadow-md transition"
                     >
                         <i className="fa-solid fa-plus text-brand"></i> <span>List property</span>
                     </Link>
 
-             
                     <div className="relative" data-dropdown-toggle>
                         <button 
                             onClick={() => setActiveDropdown(activeDropdown === 'profile' ? null : 'profile')} 
                             className="p-1 pl-3 pr-2 rounded-full hover:bg-slate-100 transition border border-slate-200 flex items-center gap-2 shadow-sm hover:shadow-md"
                         >
                             <i className="fa-solid fa-bars text-slate-600 text-sm"></i>
-                            
-                
                             {user ? (
                                 <img 
                                     src={user.image_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
@@ -123,7 +119,6 @@ export default function Header() {
                         </button>
 
                         <div className={`dropdown-menu absolute top-full right-0 mt-3 w-64 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden z-50 py-2 ${activeDropdown === 'profile' ? 'active' : ''}`}>
-                            
                             {user ? (
                                 <>
                                     <div className="px-4 py-3 border-b border-slate-100 mb-1">
@@ -135,12 +130,14 @@ export default function Header() {
                                         <i className="fa-solid fa-gauge-high text-slate-400 w-4"></i> Dashboard
                                     </Link>
 
-                                    <Link href="/my-listings" className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 font-medium flex items-center gap-2">
-                                        <i className="fa-solid fa-house-chimney text-slate-400 w-4"></i> My Listings
-                                    </Link>
+                       
+                                    {user?.role === 'host' && (
+                                        <Link href="/my-listings" className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 font-medium flex items-center gap-2">
+                                            <i className="fa-solid fa-house-chimney text-slate-400 w-4"></i> My Listings
+                                        </Link>
+                                    )}
                                     
                                     <hr className="my-2 border-slate-100" />
-                                    
 
                                     <Link 
                                         method="post" 
@@ -152,7 +149,6 @@ export default function Header() {
                                     </Link>
                                 </>
                             ) : (
-
                                 <>
                                     <Link href="/login" className="block px-4 py-2.5 text-sm font-bold text-dark hover:bg-slate-50 flex items-center gap-2">
                                         <i className="fa-solid fa-right-to-bracket text-slate-400 w-4"></i> Log in

@@ -5,13 +5,18 @@ git commit -m "Updated email marketing model"
 git push
 
 
-For future update changes:
 
-git add .
-git commit -m "Updated email marketing model"
-git push
+git commit -m "feat: Implement Dashboard, Chat System, and Saved Properties
 
-{{ route('front.servicearea.details', $data->slug) }}
+- Added role-based Dashboard (Host/Guest) with Overview, Bookings, Reviews, and Settings tabs.
+- Implemented real-time-like Chat/Messaging system with Unread count badges.
+- Integrated Bookings into Chat (auto-create conversations for booked properties).
+- Added Saved Properties (Wishlist) functionality with toggle heart icon.
+- Fixed Chart.js rendering issues and Inertia form data handling.
+- Optimized Eloquent queries for better performance."
+
+
+
 
 
 resources/js/
@@ -58,8 +63,26 @@ resources/js/
 app.blade.php is 
 
 
-<!-- Already Exist Repo For Github -->
 
-git add .
-git commit -m "Resolve merge conflicts"
-git push origin main
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

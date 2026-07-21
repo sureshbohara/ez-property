@@ -60,31 +60,38 @@ class ListingService {
         });
     }
 
+   
     protected function handleMedia(array $data, ?Listing $listing): array {
-        if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
-            if ($listing?->image) $this->mediaService->deleteImageVariants($listing->image);
+        if (isset($data['image']) && $data['image'] instanceof \Illuminate\Http\UploadedFile) {
+            if ($listing?->image) {
+                $this->mediaService->deleteImageVariants($listing->image);
+            }
             $data['image'] = $this->mediaService->uploadImage($data['image'], 'listings');
             $this->mediaService->dispatchImageProcessing($data['image']);
-        } elseif (array_key_exists('image', $data) && $data['image'] === null) {
-            if ($listing?->image) $this->mediaService->deleteImageVariants($listing->image);
-            $data['image'] = null;
         } else {
             unset($data['image']);
         }
-
         if (isset($data['gallery']) && is_array($data['gallery'])) {
             $existing = $listing?->gallery ?? [];
+            $hasNewFiles = false;
+
             foreach ($data['gallery'] as $file) {
-                if ($file instanceof UploadedFile) {
+                if ($file instanceof \Illuminate\Http\UploadedFile) {
+                    $hasNewFiles = true;
                     $path = $this->mediaService->uploadImage($file, 'listings/gallery');
                     $this->mediaService->dispatchImageProcessing($path);
                     $existing[] = $path;
                 }
             }
-            $data['gallery'] = $existing;
+            if ($hasNewFiles) {
+                $data['gallery'] = $existing;
+            } else {
+                unset($data['gallery']);
+            }
         } else {
             unset($data['gallery']);
         }
+
         return $data;
     }
 
@@ -105,7 +112,7 @@ class ListingService {
     public function deleteListing(int $id): bool {
         $listing = $this->listing->findOrFail($id);
         if ($listing->image) $this->mediaService->deleteImageVariants($listing->image);
-    
+        
         if (!empty($listing->gallery)) {
             foreach ($listing->gallery as $img) {
                 $this->mediaService->deleteImageVariants($img);
@@ -131,12 +138,10 @@ class ListingService {
         $this->mediaService->deleteImageVariants($imageName);
     }
 
-
-     public function updateDisplayType(int $id, ?string $displayOn): bool {
+    public function updateDisplayType(int $id, ?string $displayOn): bool {
         $listing = $this->listing->findOrFail($id);
         $listing->display_on = $displayOn;
         $listing->save();
         return true;
     }
-    
 }

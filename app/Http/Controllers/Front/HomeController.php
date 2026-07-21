@@ -7,7 +7,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Listing;
 use App\Models\Category;
-
+use App\Models\ListingReview;
+use Auth;
 class HomeController extends Controller
 {
 
@@ -192,6 +193,48 @@ class HomeController extends Controller
             'avgValue'       => $avgValue,
         ]);
     }
+
+
+
+
+     public function storeReview(Request $request, Listing $listing) {
+        $validated = $request->validate([
+            'overall_rating' => 'required|numeric|min:1|max:5',
+            'cleanliness'    => 'required|numeric|min:1|max:5',
+            'accuracy'       => 'required|numeric|min:1|max:5',
+            'check_in'       => 'required|numeric|min:1|max:5',
+            'location'       => 'required|numeric|min:1|max:5',
+            'value'          => 'required|numeric|min:1|max:5',
+            'comment'        => 'required|string|min:10|max:1000',
+        ]);
+
+        $existingReview = ListingReview::where('listing_id', $listing->id)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if ($existingReview) {
+            return back()->with('error', 'You have already submitted a review for this property.');
+        }
+        
+        ListingReview::create([
+            'listing_id'     => $listing->id,
+            'user_id'        => Auth::id(),
+            'guest_name'     => Auth::user()->name,
+            'overall_rating' => $validated['overall_rating'],
+            'cleanliness'    => $validated['cleanliness'],
+            'accuracy'       => $validated['accuracy'],
+            'check_in'       => $validated['check_in'],
+            'location'       => $validated['location'],
+            'value'          => $validated['value'],
+            'comment'        => $validated['comment'],
+            'stay_date'      => now(),
+            'is_approved'    => false, 
+        ]);
+
+
+        return back()->with('success', 'Thank you! Your review has been posted.');
+    }
+
 
     public function searchPage(Request $request) {
         $location = $request->get('location');

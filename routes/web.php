@@ -34,6 +34,7 @@ Route::name('front.')->group(function () {
 
     Route::middleware('auth')->group(function () {
         Route::post('/logout', [UserController::class, 'logout'])->name('logout');
+        Route::post('/property/{listing}/reviews', [HomeController::class, 'storeReview'])->name('property.reviews.store');
 
 
         Route::post('/account/profile', [UserController::class, 'updateProfile'])->name('account.profile.update');
@@ -44,8 +45,25 @@ Route::name('front.')->group(function () {
         Route::post('/become-host', [UserController::class, 'upgradeToHost'])->name('upgrade.host');
 
         Route::get('/properties/create', [PropertyController::class, 'create'])->name('properties.create');
-        Route::post('/properties', [PropertyController::class, 'store'])->name('properties.store');
+        Route::post('/properties', [PropertyController::class, 'storeProperty'])->name('properties.store');
+        Route::get('/properties/{id}/edit', [PropertyController::class, 'edit'])->name('properties.edit');
+        Route::put('/properties/{id}', [PropertyController::class, 'update'])->name('properties.update');
+        Route::post('/properties/{id}/delete-gallery', [PropertyController::class, 'deleteGalleryImage'])->name('properties.delete-gallery');
+
+
+        Route::get('/my-listings', [PropertyController::class, 'myListings'])->name('properties.my-listings');
+        Route::post('/properties/{id}/save', [PropertyController::class, 'toggleSave'])->name('properties.save');
+
+        
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/messages/{userId}', [DashboardController::class, 'showConversation'])->name('messages.show');
+        Route::post('/messages', [DashboardController::class, 'storeMessage'])->name('messages.store');
+
+       
+
+
+
     });
 });
 

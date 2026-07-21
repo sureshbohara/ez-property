@@ -22,7 +22,7 @@ class ListingRequest extends FormRequest
 
     public function rules(): array 
     {
-        $id = $this->route('listing')?->id;
+         $id = $this->route('id');
         
         return [
             'title' => 'required|string|max:255',
@@ -36,9 +36,6 @@ class ListingRequest extends FormRequest
             'country' => 'required|string|max:100',
             'display_on' => 'nullable',
             
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-
             'highlight_key' => 'nullable|array',
             'highlight_key.*' => 'nullable|string|max:255',
 

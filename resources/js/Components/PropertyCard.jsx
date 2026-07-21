@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { formatPrice } from '../Utils/helpers';
+import toast from 'react-hot-toast';
 
 export default function PropertyCard({ listing, variant = 'default' }) {
-    const [isFavorite, setIsFavorite] = useState(false);
+    const { props } = usePage();
+    const user = props.auth?.user;
+
+    const initialSavedState = listing.is_saved || (listing.saved_by_users && listing.saved_by_users.length > 0) || false;
+    
+    const [isFavorite, setIsFavorite] = useState(initialSavedState);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const [currency, setCurrency] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -11,6 +18,7 @@ export default function PropertyCard({ listing, variant = 'default' }) {
         }
         return 'NPR';
     });
+
     useEffect(() => {
         const handleCurrencyChange = () => {
             setCurrency(localStorage.getItem('selectedCurrency') || 'NPR');
@@ -18,6 +26,32 @@ export default function PropertyCard({ listing, variant = 'default' }) {
         window.addEventListener('currencyChanged', handleCurrencyChange);
         return () => window.removeEventListener('currencyChanged', handleCurrencyChange);
     }, []);
+
+    const handleToggleFavorite = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!user) {
+            toast.error('Please log in to save properties');
+            router.visit('/login');
+            return;
+        }
+
+        setIsProcessing(true);
+        const newFavoriteState = !isFavorite;
+        setIsFavorite(newFavoriteState);
+        router.post(`/properties/${listing.id}/save`, {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success(newFavoriteState ? 'Added to saved properties!' : 'Removed from saved properties.');
+                setIsProcessing(false);
+            },
+            onError: () => {
+                setIsFavorite(!newFavoriteState);
+                setIsProcessing(false);
+                toast.error('Failed to update saved properties.');
+            }
+        });
+    };
 
     const aspectClass = variant === 'square' ? 'aspect-square' : 'aspect-[4/3]';
     const displayImage = listing.image_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=600&q=80';
@@ -55,15 +89,13 @@ export default function PropertyCard({ listing, variant = 'default' }) {
                 </div>
             
                 <button 
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setIsFavorite(!isFavorite);
-                    }}
-                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all group/heart"
+                    onClick={handleToggleFavorite}
+                    disabled={isProcessing}
+                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all group/heart disabled:opacity-50"
                 >
-                    <i className={`fa-${isFavorite ? 'solid' : 'regular'} fa-heart ${isFavorite ? 'text-red-500' : 'text-white'} drop-shadow-md text-sm`}></i>
+                    <i className={`fa-${isFavorite ? 'solid' : 'regular'} fa-heart ${isFavorite ? 'text-red-500' : 'text-white'} drop-shadow-md text-sm ${isProcessing ? 'animate-pulse' : ''}`}></i>
                 </button>
+
                 {listing.instant_bookable && (
                     <div className="absolute bottom-3 left-3 bg-brand text-white px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">
                         <i className="fa-solid fa-bolt text-[8px] mr-1"></i> Instant
