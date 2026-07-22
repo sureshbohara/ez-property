@@ -20,7 +20,7 @@ Route::name('front.')->group(function () {
     
     Route::get('/pages/{slug}', [CmsPageController::class, 'cmsPage'])->name('cms.pages');
     Route::get('/faqs', [HomeController::class, 'faqsPage'])->name('faqs');
-    Route::post('/contact-submit', [HomeController::class, 'submitContactForm'])->name('contact.submit');
+    Route::post('/contact-submit', [HomeController::class, 'contactSubmit'])->name('contact.submit');
 
 
   

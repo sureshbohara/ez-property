@@ -9,6 +9,13 @@ use App\Models\Listing;
 use App\Models\Category;
 use App\Models\ListingReview;
 use Auth;
+
+
+use App\Http\Requests\Front\ContactFormRequest;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\ContactMessage;
+
 class HomeController extends Controller
 {
 
@@ -197,7 +204,7 @@ class HomeController extends Controller
 
 
 
-     public function storeReview(Request $request, Listing $listing) {
+    public function storeReview(Request $request, Listing $listing) {
         $validated = $request->validate([
             'overall_rating' => 'required|numeric|min:1|max:5',
             'cleanliness'    => 'required|numeric|min:1|max:5',
@@ -209,8 +216,8 @@ class HomeController extends Controller
         ]);
 
         $existingReview = ListingReview::where('listing_id', $listing->id)
-            ->where('user_id', Auth::id())
-            ->first();
+        ->where('user_id', Auth::id())
+        ->first();
 
         if ($existingReview) {
             return back()->with('error', 'You have already submitted a review for this property.');
@@ -294,15 +301,34 @@ class HomeController extends Controller
 
 
 
- 
+    
     
 
     public function faqsPage() {
-     $faqs = \App\Models\Faq::active()->ordered()->get();
-     return Inertia::render('Faqs', [
+       $faqs = \App\Models\Faq::active()->ordered()->get();
+       return Inertia::render('Faqs', [
         'faqs' => $faqs
     ]);
+   }
+
+
+     public function contactSubmit(ContactFormRequest $request){
+        try {
+            $adminEmails = ['boharas371@gmail.com','vron371@gmail.com'];
+            Mail::to($adminEmails)->send(
+                new ContactMessage($request->validated())
+            );
+            return back()->with('success','Your message has been received. We will contact you soon!');
+        } catch (\Exception $e) {
+            Log::error('Contact Mail Error: ' . $e->getMessage());
+            return back()->with(
+                'error',
+                'Mail sending failed. Please try again later.'
+            );
+        }
     }
+
+
 
 
 }

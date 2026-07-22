@@ -59,15 +59,18 @@ class SettingTableSeeder extends Seeder
                 'info7' => null,
 
                  // --- SMTP / Mail ---
+
+
                 'mail_transport' => 'smtp',
                 'mail_host' => 'smtp.gmail.com',
                 'mail_port' => '587',
-                'mail_username' => 'your_email@gmail.com',
-                'mail_password' => 'your_app_password',
+                'mail_username' => 'ezbooking42@gmail.com',
+                'mail_password' => 'uqxr fnvu uznf zisi',
                 'mail_encryption' => 'tls',
                 'mail_from' => 'noreply@ezproperty.com',
                 'mail_from_name' => 'Ez Property',
                 'smtp_check' => true,
+            
 
                 // --- ReCaptcha ---
                 'recaptcha_site_key' => '', 
@@ -89,8 +92,8 @@ class SettingTableSeeder extends Seeder
                 'google_redirect' => '',
                 'is_google' => false,
 
-            
-         
+
+
                 'process_title' => 'Why Choose Ez Property?',
                 'process_sub_title' => 'Experience the best of Nepal with our trusted platform',
                 'process_item' => ([
@@ -116,8 +119,8 @@ class SettingTableSeeder extends Seeder
                     ]
                 ]),
 
-       
-       
+
+
                 'work_title' => 'Become a Host',
                 'work_sub_title' => 'Ready to earn from your property? Upgrade your account now to access the host dashboard and create your first listing in minutes.',
                 'work_item' => ([
@@ -143,8 +146,8 @@ class SettingTableSeeder extends Seeder
                     ]
                 ]),
 
-             
-          
+
+
                 'counter_title' => 'Why Book With Us',
                 'counter_sub_title' => 'Trusted by Travelers Across the Globe',
                 'counter_item' => ([
@@ -171,5 +174,5 @@ class SettingTableSeeder extends Seeder
                 ]),
             ]
         );
-    }
+}
 }
