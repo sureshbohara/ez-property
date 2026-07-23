@@ -1,0 +1,830 @@
+src/
+│
+├── api/                          # Laravel backend सँग कुरा गर्ने (Feature-based)
+│   ├── axiosClient.js            # Base URL, Interceptors, र Token ह्यान्डल गर्ने
+│   ├── authApi.js                # Login, Register, Reset Password, Profile
+│   ├── propertyApi.js            # Property listing, details, search, categories
+│   ├── bookingApi.js             # Booking create, my bookings, cancel
+│   ├── chatApi.js                # Messages र conversations
+│   ├── cmsApi.js                 # Terms, Privacy, FAQs
+│   └── index.js                  # सबै API लाई एकैपटक export गर्ने (Magic File)
+│
+├── assets/                       # Static Files
+│   ├── images/                   # Logo, placeholders, icons
+│   └── fonts/                    # Custom fonts (जस्तै: Poppins, Inter)
+│
+├── theme/                        # App को Design System
+│   ├── colors.js                 # Brand colors, slate, white, etc.
+│   ├── spacing.js                # Padding र Margin को standard values
+│   └── typography.js             # Font sizes र weights
+│
+├── navigation/                   # React Navigation बस्ने ठाउँ
+│   ├── AppNavigator.js           # Main Navigator (Splash -> Auth -> App)
+│   ├── AuthStack.js              # Login, Register, ResetPassword
+│   ├── MainStack.js              # App को main routes (Header र BottomTab लाई wrap गर्ने)
+│   └── BottomTabNavigator.js     # Fixed bottom navigation (Explore / Home Tab, Saved / Favorites Tab, Trips / Bookings Tab, Inbox / Chats Tab , Profile Tab)
+│
+├── screens/                      # अलग-अलग Screens (UI)
+│   ├── SplashScreen.js
+│   │
+│   ├── auth/                     # Login/Register Screens
+│   │   ├── LoginScreen.js
+│   │   ├── RegisterScreen.js
+│   │   └── ResetPasswordScreen.js
+│   │
+│   ├── main/                     # Main App Screens
+│   │   ├── HomeScreen.js         # Role-based condition अनुसार View देखाउने
+│   │   ├── ListingScreen.js      # Search Results देखिने
+│   │   ├── PropertyDetailsScreen.js
+│   │   ├── CheckoutScreen.js     # Booking confirm गर्ने screen
+│   │   ├── BookingScreen.js      # MyBookings / Reservations (Guest/Host/Admin)
+│   │   └── FavoritesScreen.js    # Saved properties
+│   │
+│   ├── profile/                  # Profile related
+│   │   ├── ProfileScreen.js      # User info + Edit/Change Password links
+│   │   └── EditProfileScreen.js
+│   │
+│   ├── chat/                     # Messaging
+│   │   ├── ChatListScreen.js     # Chat गर्ने users को list
+│   │   └── ChatRoomScreen.js     # Actual chat गर्ने screen
+│   │
+│   └── cms/                      # Static Pages
+│       ├── CmsScreen.js          # Terms & Conditions, Privacy Policy
+│       └── FaqsScreen.js
+│
+├── components/                   # पुनः प्रयोग हुने UI Components
+│   ├── layout/
+│   │   ├── Header.js             # Top Header (Logo + Search bar)
+│   │   └── PropertyCard.js       # Listing card UI
+│   ├── home/
+│   │   ├── GuestHomeView.js      # Property listings dekhau
+│   │   ├── HostHomeView.js       # Booking stats dekhau
+│   │   └── AdminHomeView.js      # All system stats
+│   └── shared/
+│       ├── Button.js
+│       ├── Input.js
+│       └── LoadingSpinner.js
+│
+├── context/                      # Global State (React Context)
+│   ├── AuthContext.js            # Current user ko data, role (guest/host/admin), token
+│   └── ThemeContext.js           # App colors र styling (Dark/Light mode को लागि)
+│
+├── hooks/                        # Custom React Hooks (Reusable Logic)
+│   ├── useApi.js                 # API call गर्ने र loading/error state ह्यान्डल गर्ने
+│   └── useCurrency.js            # NPR, USD, INR convert गर्ने logic
+│
+├── utils/                        # Helper functions
+│   ├── formatCurrency.js         # Price format गर्ने
+│   └── constants.js              # Property types, Popular destinations array
+│
+└── App.js                        # Entry point (Providers wrap गर्ने)
+
+
+
+// HomeScreen.js Example
+const { user } = useAuth(); // तपाईंको Context बाट
+
+if (user?.role === 'guest') return <GuestHomeView />;
+if (user?.role === 'host') return <HostHomeView />;
+if (user?.role === 'admin') return <AdminHomeView />;
+
+
+
+
+
+
+
+// ===== FILE: App.js =====
+import React from 'react';
+import { AuthProvider } from './src/context/AuthContext';
+import AppNavigator from './src/navigation/AppNavigator';
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppNavigator />
+    </AuthProvider>
+  );
+}
+
+// ===== FILE: src/api/axiosClient.js =====
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const BASE_URL = 'http://10.0.2.2:8000/api/v1'; // Android Emulator को लागि
+
+const api = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+});
+
+api.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem('access_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+export default api;
+
+// ===== FILE: src/api/authApi.js =====
+import api from './axiosClient';
+export const loginUser = (credentials) => api.post('/login', credentials);
+export const registerUser = (data) => api.post('/register', data);
+export const logoutUser = () => api.post('/logout');
+export const getProfile = () => api.get('/user');
+export const updateProfileUser = (data) => api.post('/account/profile', data);
+export const updatePasswordUser = (data) => api.post('/account/password', data);
+
+// ===== FILE: src/api/propertyApi.js =====
+import api from './axiosClient';
+export const fetchHomeData = () => api.get('/home');
+export const fetchAllProperties = () => api.get('/all-listing');
+export const fetchPropertyDetails = (slug) => api.get(`/listing/${slug}`);
+export const searchProperties = (query) => api.get('/search', { params: query });
+
+// ===== FILE: src/api/bookingApi.js =====
+import api from './axiosClient';
+export const createBooking = (data) => api.post('/bookings', data);
+export const fetchMyBookings = () => api.get('/my-bookings');
+export const cancelBooking = (id) => api.post(`/bookings/${id}/cancel`);
+
+// ===== FILE: src/api/chatApi.js =====
+import api from './axiosClient';
+export const fetchConversations = () => api.get('/conversations');
+export const fetchMessages = (userId) => api.get(`/messages/${userId}`);
+export const sendMessageApi = (data) => api.post('/messages', data);
+
+// ===== FILE: src/api/cmsApi.js =====
+import api from './axiosClient';
+export const fetchPage = (slug) => api.get(`/pages/${slug}`);
+export const fetchFaqs = () => api.get('/faqs');
+
+// ===== FILE: src/api/dashboardApi.js =====
+import api from './axiosClient';
+export const fetchDashboardStats = () => api.get('/dashboard');
+
+// ===== FILE: src/api/index.js =====
+export * from './authApi';
+export * from './propertyApi';
+export * from './bookingApi';
+export * from './chatApi';
+export * from './cmsApi';
+export * from './dashboardApi';
+
+// ===== FILE: src/theme/colors.js =====
+export default {
+  brand: '#0d9488',
+  brandHover: '#0f766e',
+  white: '#ffffff',
+  dark: '#0f172a',
+  slate50: '#f8fafc',
+  slate100: '#f1f5f9',
+  slate200: '#e2e8f0',
+  slate500: '#64748b',
+  slate600: '#475569',
+  red500: '#ef4444',
+  green500: '#22c55e',
+};
+
+// ===== FILE: src/context/AuthContext.js =====
+import React, { createContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loginUser, logoutUser } from '../api';
+
+export const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  const loadUser = async () => {
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const userStr = await AsyncStorage.getItem('user_data');
+      if (token && userStr) {
+        setUser(JSON.parse(userStr));
+      }
+    } catch (e) {
+      console.log('Failed to load user', e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const login = async (credentials) => {
+    const response = await loginUser(credentials);
+    const { token, user } = response.data;
+    await AsyncStorage.setItem('access_token', token);
+    await AsyncStorage.setItem('user_data', JSON.stringify(user));
+    setUser(user);
+    return response;
+  };
+
+  const logout = async () => {
+    try { await logoutUser(); } catch {}
+    await AsyncStorage.removeItem('access_token');
+    await AsyncStorage.removeItem('user_data');
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// ===== FILE: src/components/shared/LoadingSpinner.js =====
+import React from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import Colors from '../../theme/colors';
+
+export default function LoadingSpinner() {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <ActivityIndicator size="large" color={Colors.brand} />
+    </View>
+  );
+}
+
+// ===== FILE: src/components/layout/Header.js =====
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import Colors from '../../theme/colors';
+
+export default function Header({ navigation }) {
+  return (
+    <View style={styles.header}>
+      <Text style={styles.logo}>EzProperty</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('Listing')} style={styles.searchBar}>
+        <Feather name="search" size={20} color={Colors.slate500} />
+        <Text style={styles.searchText}>Where to? Search...</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  header: { padding: 15, backgroundColor: Colors.white, borderBottomWidth: 1, borderColor: Colors.slate100 },
+  logo: { fontSize: 24, fontWeight: 'bold', color: Colors.brand, marginBottom: 10 },
+  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.slate50, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: Colors.slate200 },
+  searchText: { marginLeft: 10, color: Colors.slate500, fontSize: 16 }
+});
+
+// ===== FILE: src/components/layout/PropertyCard.js =====
+import React from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import Colors from '../../theme/colors';
+
+export default function PropertyCard({ item, onPress }) {
+  return (
+    <TouchableOpacity onPress={onPress} style={styles.card}>
+      <Image source={{ uri: item.image_url }} style={styles.image} />
+      <View style={styles.info}>
+        <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
+        <Text style={styles.location}>{item.city}, {item.province}</Text>
+        <Text style={styles.price}>Rs {item.base_price} / night</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: { backgroundColor: Colors.white, borderRadius: 12, marginBottom: 15, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 5, elevation: 3 },
+  image: { width: '100%', height: 180, borderTopLeftRadius: 12, borderTopRightRadius: 12 },
+  info: { padding: 12 },
+  title: { fontSize: 16, fontWeight: 'bold', color: Colors.dark },
+  location: { fontSize: 14, color: Colors.slate500, marginTop: 2 },
+  price: { fontSize: 14, fontWeight: 'bold', color: Colors.brand, marginTop: 5 }
+});
+
+// ===== FILE: src/components/home/GuestHomeView.js =====
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, ScrollView } from 'react-native';
+import { fetchHomeData } from '../../api';
+import PropertyCard from '../layout/PropertyCard';
+import LoadingSpinner from '../shared/LoadingSpinner';
+
+export default function GuestHomeView({ navigation }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchHomeData().then(res => setData(res.data.data)).catch(e => console.log(e)).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <LoadingSpinner />;
+
+  return (
+    <ScrollView style={{ padding: 15 }}>
+      <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 10 }}>Featured Properties</Text>
+      <FlatList
+        horizontal
+        data={data?.featuredProperties}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={{ width: 250, marginRight: 15 }}>
+            <PropertyCard item={item} onPress={() => navigation.navigate('PropertyDetails', { slug: item.slug })} />
+          </View>
+        )}
+      />
+    </ScrollView>
+  );
+}
+
+// ===== FILE: src/components/home/HostHomeView.js =====
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { fetchDashboardStats } from '../../api';
+import Colors from '../../theme/colors';
+import LoadingSpinner from '../shared/LoadingSpinner';
+
+export default function HostHomeView() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardStats().then(res => setStats(res.data.data)).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <LoadingSpinner />;
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Host Dashboard</Text>
+      <View style={styles.card}><Text style={styles.label}>Total Properties</Text><Text style={styles.value}>{stats?.stats?.total_properties || 0}</Text></View>
+      <View style={styles.card}><Text style={styles.label}>Total Bookings</Text><Text style={styles.value}>{stats?.stats?.total_bookings || 0}</Text></View>
+      <View style={styles.card}><Text style={styles.label}>Total Earnings</Text><Text style={styles.value}>Rs {stats?.stats?.total_earnings || 0}</Text></View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20, backgroundColor: Colors.white },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
+  card: { backgroundColor: Colors.slate50, padding: 20, borderRadius: 12, marginBottom: 15 },
+  label: { fontSize: 14, color: Colors.slate500 },
+  value: { fontSize: 24, fontWeight: 'bold', color: Colors.dark, marginTop: 5 }
+});
+
+// ===== FILE: src/components/home/AdminHomeView.js =====
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { fetchDashboardStats } from '../../api';
+import Colors from '../../theme/colors';
+import LoadingSpinner from '../shared/LoadingSpinner';
+
+export default function AdminHomeView() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardStats().then(res => setStats(res.data.data)).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <LoadingSpinner />;
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Admin Dashboard</Text>
+      <View style={styles.card}><Text style={styles.label}>Total Users</Text><Text style={styles.value}>{stats?.stats?.total_users || 0}</Text></View>
+      <View style={styles.card}><Text style={styles.label}>Total Bookings</Text><Text style={styles.value}>{stats?.stats?.total_bookings || 0}</Text></View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20, backgroundColor: Colors.white },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
+  card: { backgroundColor: Colors.slate50, padding: 20, borderRadius: 12, marginBottom: 15 },
+  label: { fontSize: 14, color: Colors.slate500 },
+  value: { fontSize: 24, fontWeight: 'bold', color: Colors.dark, marginTop: 5 }
+});
+
+// ===== FILE: src/screens/auth/LoginScreen.js =====
+import React, { useState, useContext } from 'react';
+import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
+import { AuthContext } from '../../context/AuthContext';
+import Colors from '../../theme/colors';
+
+export default function LoginScreen({ navigation }) {
+  const { login } = useContext(AuthContext);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try { await login({ email, password }); } 
+    catch (e) { Alert.alert('Error', e.response?.data?.message || 'Login failed'); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Welcome Back</Text>
+      <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.input} />
+      <TextInput placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} style={styles.input} />
+      <Button title={loading ? "Logging in..." : "Login"} onPress={handleLogin} disabled={loading} color={Colors.brand} />
+      <Text style={{ textAlign: 'center', marginTop: 15, color: Colors.slate500 }} onPress={() => navigation.navigate('Register')}>Don't have an account? Sign up</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: Colors.white },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: Colors.dark },
+  input: { borderWidth: 1, borderColor: Colors.slate200, padding: 15, marginBottom: 15, borderRadius: 10, fontSize: 16 }
+});
+
+// ===== FILE: src/screens/auth/RegisterScreen.js =====
+import React, { useState } from 'react';
+import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
+import { registerUser } from '../../api';
+import Colors from '../../theme/colors';
+
+export default function RegisterScreen({ navigation }) {
+  const [data, setData] = useState({ name: '', email: '', phone: '', password: '', password_confirmation: '' });
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async () => {
+    setLoading(true);
+    try {
+      await registerUser(data);
+      Alert.alert('Success', 'Account created! Please login.');
+      navigation.navigate('Login');
+    } catch (e) {
+      Alert.alert('Error', e.response?.data?.message || 'Registration failed');
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Create Account</Text>
+      <TextInput placeholder="Name" style={styles.input} onChangeText={(v) => setData({...data, name: v})} />
+      <TextInput placeholder="Email" style={styles.input} onChangeText={(v) => setData({...data, email: v})} />
+      <TextInput placeholder="Phone" style={styles.input} onChangeText={(v) => setData({...data, phone: v})} />
+      <TextInput placeholder="Password" secureTextEntry style={styles.input} onChangeText={(v) => setData({...data, password: v})} />
+      <TextInput placeholder="Confirm Password" secureTextEntry style={styles.input} onChangeText={(v) => setData({...data, password_confirmation: v})} />
+      <Button title={loading ? "Registering..." : "Register"} onPress={handleRegister} disabled={loading} color={Colors.brand} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: Colors.white },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: Colors.dark },
+  input: { borderWidth: 1, borderColor: Colors.slate200, padding: 15, marginBottom: 15, borderRadius: 10, fontSize: 16 }
+});
+
+// ===== FILE: src/screens/auth/ResetPasswordScreen.js =====
+import React from 'react';
+import { View, Text } from 'react-native';
+export default function ResetPasswordScreen() {
+  return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>Reset Password Screen</Text></View>;
+}
+
+// ===== FILE: src/screens/main/HomeScreen.js =====
+import React, { useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext';
+import GuestHomeView from '../../components/home/GuestHomeView';
+import HostHomeView from '../../components/home/HostHomeView';
+import AdminHomeView from '../../components/home/AdminHomeView';
+import Header from '../../components/layout/Header';
+
+export default function HomeScreen({ navigation }) {
+  const { user } = useContext(AuthContext);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <Header navigation={navigation} />
+      {user?.role === 'guest' && <GuestHomeView navigation={navigation} />}
+      {user?.role === 'host' && <HostHomeView />}
+      {user?.role === 'admin' && <AdminHomeView />}
+    </View>
+  );
+}
+
+// ===== FILE: src/screens/main/ListingScreen.js =====
+import React, { useState, useEffect } from 'react';
+import { View, FlatList } from 'react-native';
+import { searchProperties } from '../../api';
+import PropertyCard from '../../components/layout/PropertyCard';
+import LoadingSpinner from '../../components/shared/LoadingSpinner';
+
+export default function ListingScreen({ route, navigation }) {
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const query = route.params?.query || {};
+
+  useEffect(() => {
+    searchProperties(query).then(res => setResults(res.data.data?.data || [])).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <LoadingSpinner />;
+
+  return (
+    <View style={{ padding: 15, backgroundColor: '#fff' }}>
+      <FlatList data={results} keyExtractor={(item) => item.id.toString()} renderItem={({ item }) => <PropertyCard item={item} onPress={() => navigation.navigate('PropertyDetails', { slug: item.slug })} />} />
+    </View>
+  );
+}
+
+// ===== FILE: src/screens/main/PropertyDetailsScreen.js =====
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, ScrollView, Button, StyleSheet } from 'react-native';
+import { fetchPropertyDetails } from '../../api';
+import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import Colors from '../../theme/colors';
+
+export default function PropertyDetailsScreen({ route, navigation }) {
+  const [listing, setListing] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const slug = route.params.slug;
+
+  useEffect(() => {
+    fetchPropertyDetails(slug).then(res => setListing(res.data.data)).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <LoadingSpinner />;
+
+  return (
+    <ScrollView style={{ padding: 15, backgroundColor: '#fff' }}>
+      <Image source={{ uri: listing.image_url }} style={styles.image} />
+      <Text style={styles.title}>{listing.title}</Text>
+      <Text style={styles.location}>{listing.city}, {listing.province}</Text>
+      <Text style={styles.price}>Rs {listing.base_price} / night</Text>
+      <Text style={styles.description}>{listing.description}</Text>
+      <Button title="Reserve" onPress={() => navigation.navigate('Checkout', { listing })} color={Colors.brand} />
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  image: { width: '100%', height: 250, borderRadius: 12 },
+  title: { fontSize: 24, fontWeight: 'bold', marginTop: 15, color: Colors.dark },
+  location: { fontSize: 16, color: Colors.slate500 },
+  price: { fontSize: 18, fontWeight: 'bold', color: Colors.brand, marginVertical: 10 },
+  description: { marginTop: 10, color: Colors.slate600, lineHeight: 22, marginBottom: 20 }
+});
+
+// ===== FILE: src/screens/main/CheckoutScreen.js =====
+import React, { useState } from 'react';
+import { View, Text, Button, Alert, StyleSheet } from 'react-native';
+import { createBooking } from '../../api';
+import Colors from '../../theme/colors';
+
+export default function CheckoutScreen({ route, navigation }) {
+  const listing = route.params.listing;
+  const [loading, setLoading] = useState(false);
+
+  const handleBooking = async () => {
+    setLoading(true);
+    try {
+      await createBooking({ 
+        listing_id: listing.id, 
+        check_in: '2024-12-01', // Demo dates
+        check_out: '2024-12-03', 
+        guests: 2, 
+        total_price: listing.base_price * 2 
+      });
+      Alert.alert('Success', 'Booking confirmed!');
+      navigation.navigate('Trips');
+    } catch (e) {
+      Alert.alert('Error', 'Failed to book');
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Checkout</Text>
+      <Text style={styles.text}>{listing.title}</Text>
+      <Text style={styles.price}>Total: Rs {listing.base_price * 2}</Text>
+      <Button title={loading ? "Booking..." : "Confirm Booking (COD)"} onPress={handleBooking} disabled={loading} color={Colors.brand} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
+  text: { fontSize: 18, marginBottom: 10 },
+  price: { fontSize: 20, fontWeight: 'bold', color: Colors.brand, marginBottom: 30 }
+});
+
+// ===== FILE: src/screens/main/BookingScreen.js =====
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { fetchMyBookings } from '../../api';
+import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import Colors from '../../theme/colors';
+
+export default function BookingScreen() {
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchMyBookings().then(res => setBookings(res.data.data || [])).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <LoadingSpinner />;
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>My Trips</Text>
+      <FlatList 
+        data={bookings} 
+        keyExtractor={(item) => item.id.toString()} 
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{item.listing?.title}</Text>
+            <Text>Status: {item.status}</Text>
+            <Text style={styles.price}>Rs {item.total_price}</Text>
+          </View>
+        )} 
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 15, backgroundColor: '#fff' },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 15 },
+  card: { backgroundColor: Colors.slate50, padding: 15, borderRadius: 10, marginBottom: 10 },
+  cardTitle: { fontSize: 18, fontWeight: 'bold', color: Colors.dark },
+  price: { fontSize: 16, fontWeight: 'bold', color: Colors.brand, marginTop: 5 }
+});
+
+// ===== FILE: src/screens/main/FavoritesScreen.js =====
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+export default function FavoritesScreen() {
+  return <View style={styles.container}><Text style={styles.text}>Saved Properties</Text></View>;
+}
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
+  text: { fontSize: 20, fontWeight: 'bold' }
+});
+
+// ===== FILE: src/screens/chat/ChatListScreen.js =====
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+export default function ChatListScreen() {
+  return <View style={styles.container}><Text style={styles.text}>Chat List</Text></View>;
+}
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
+  text: { fontSize: 20, fontWeight: 'bold' }
+});
+
+// ===== FILE: src/screens/chat/ChatRoomScreen.js =====
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+export default function ChatRoomScreen() {
+  return <View style={styles.container}><Text style={styles.text}>Chat Room</Text></View>;
+}
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
+  text: { fontSize: 20, fontWeight: 'bold' }
+});
+
+// ===== FILE: src/screens/profile/ProfileScreen.js =====
+import React, { useContext } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+import { AuthContext } from '../../context/AuthContext';
+import Colors from '../../theme/colors';
+
+export default function ProfileScreen({ navigation }) {
+  const { user, logout } = useContext(AuthContext);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.name}>{user?.name}</Text>
+      <Text style={styles.email}>{user?.email} ({user?.role})</Text>
+      <View style={styles.btn}><Button title="Edit Profile" onPress={() => navigation.navigate('EditProfile')} color={Colors.brand} /></View>
+      <View style={styles.btn}><Button title="Logout" color="red" onPress={logout} /></View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  name: { fontSize: 24, fontWeight: 'bold', color: Colors.dark },
+  email: { fontSize: 16, color: Colors.slate500, marginBottom: 30 },
+  btn: { marginBottom: 15 }
+});
+
+// ===== FILE: src/screens/profile/EditProfileScreen.js =====
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+export default function EditProfileScreen() {
+  return <View style={styles.container}><Text style={styles.text}>Edit Profile Screen</Text></View>;
+}
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
+  text: { fontSize: 20, fontWeight: 'bold' }
+});
+
+// ===== FILE: src/navigation/BottomTabNavigator.js =====
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Feather } from '@expo/vector-icons';
+import Colors from '../theme/colors';
+
+import HomeScreen from '../screens/main/HomeScreen';
+import FavoritesScreen from '../screens/main/FavoritesScreen';
+import BookingScreen from '../screens/main/BookingScreen';
+import ChatListScreen from '../screens/chat/ChatListScreen';
+import ProfileScreen from '../screens/profile/ProfileScreen';
+
+const Tab = createBottomTabNavigator();
+
+export default function BottomTabNavigator() {
+  return (
+    <Tab.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: Colors.brand }}>
+      <Tab.Screen name="Explore" component={HomeScreen} options={{ tabBarIcon: ({ color }) => <Feather name="search" size={24} color={color} /> }} />
+      <Tab.Screen name="Saved" component={FavoritesScreen} options={{ tabBarIcon: ({ color }) => <Feather name="heart" size={24} color={color} /> }} />
+      <Tab.Screen name="Trips" component={BookingScreen} options={{ tabBarIcon: ({ color }) => <Feather name="briefcase" size={24} color={color} /> }} />
+      <Tab.Screen name="Inbox" component={ChatListScreen} options={{ tabBarIcon: ({ color }) => <Feather name="message-circle" size={24} color={color} /> }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarIcon: ({ color }) => <Feather name="user" size={24} color={color} /> }} />
+    </Tab.Navigator>
+  );
+}
+
+// ===== FILE: src/navigation/AuthStack.js =====
+import React from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import LoginScreen from '../screens/auth/LoginScreen';
+import RegisterScreen from '../screens/auth/RegisterScreen';
+import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
+
+const Stack = createStackNavigator();
+
+export default function AuthStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// ===== FILE: src/navigation/MainStack.js =====
+import React from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import BottomTabNavigator from './BottomTabNavigator';
+import PropertyDetailsScreen from '../screens/main/PropertyDetailsScreen';
+import CheckoutScreen from '../screens/main/CheckoutScreen';
+import ChatRoomScreen from '../screens/chat/ChatRoomScreen';
+import EditProfileScreen from '../screens/profile/EditProfileScreen';
+
+const Stack = createStackNavigator();
+
+export default function MainStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MainApp" component={BottomTabNavigator} />
+      <Stack.Screen name="PropertyDetails" component={PropertyDetailsScreen} />
+      <Stack.Screen name="Checkout" component={CheckoutScreen} />
+      <Stack.Screen name="ChatRoom" component={ChatRoomScreen} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// ===== FILE: src/navigation/AppNavigator.js =====
+import React, { useContext } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { ActivityIndicator, View } from 'react-native';
+import { AuthContext } from '../context/AuthContext';
+import Colors from '../theme/colors';
+import AuthStack from './AuthStack';
+import MainStack from './MainStack';
+
+export default function AppNavigator() {
+  const { user, isLoading } = useContext(AuthContext);
+
+  if (isLoading) {
+    return <View style={{flex: 1, justifyContent: 'center'}}><ActivityIndicator size="large" color={Colors.brand} /></View>;
+  }
+
+  return (
+    <NavigationContainer>
+      {user ? <MainStack /> : <AuthStack />}
+    </NavigationContainer>
+  );
+}

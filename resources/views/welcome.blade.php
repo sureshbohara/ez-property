@@ -2,7 +2,7 @@ For future update changes:
 
 git add .
 git commit -m "Updated email marketing model"
-git push
+git push origin main
 
 
 
@@ -51,28 +51,4 @@ resources/js/
 └── app.css                 # Tailwind/CSS imports
 
 app.blade.php is 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
