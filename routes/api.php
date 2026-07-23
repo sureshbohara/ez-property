@@ -31,33 +31,37 @@ Route::prefix('v1')->group(function () {
 
     // Protected Routes 
     Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
-        Route::post('/account/profile', [AuthenticationController::class, 'updateProfile'])->name('account.profile.update');
-        Route::post('/account/password', [AuthenticationController::class, 'updatePassword'])->name('account.password.update');
 
 
-        Route::get('/conversations', [ChatController::class, 'conversations']);
-        Route::get('/messages/{userId}', [ChatController::class, 'getMessages']); 
-        Route::post('/messages', [ChatController::class, 'sendMessage']); 
+      Route::get('/user', function (Request $request) {return response()->json(['status' => true,'data' => $request->user()]);});
+
+      Route::post('/logout', [AuthenticationController::class, 'logout'])->name('logout');
+      Route::post('/account/profile', [AuthenticationController::class, 'updateProfile'])->name('account.profile.update');
+      Route::post('/account/password', [AuthenticationController::class, 'updatePassword'])->name('account.password.update');
+
+
+      Route::get('/conversations', [ChatController::class, 'conversations']);
+      Route::get('/messages/{userId}', [ChatController::class, 'getMessages']); 
+      Route::post('/messages', [ChatController::class, 'sendMessage']); 
 
 
 
         // Favorites
-        Route::get('/favorites', [FavoriteController::class, 'index']); 
-        Route::post('/favorites', [FavoriteController::class, 'toggle']);
+      Route::get('/favorites', [FavoriteController::class, 'index']); 
+      Route::post('/favorites', [FavoriteController::class, 'toggle']);
 
 
 
         // Dashboard
-        Route::get('/dashboard', [DashboardController::class, 'stats']);
-        
+      Route::get('/dashboard', [DashboardController::class, 'stats']);
+
         // Bookings
-        Route::post('/bookings', [BookingController::class, 'store']); 
-        Route::get('/my-bookings', [BookingController::class, 'myBookings']);
-        Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
+      Route::post('/bookings', [BookingController::class, 'store']); 
+      Route::get('/my-bookings', [BookingController::class, 'myBookings']);
+      Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
 
 
-    });
+  });
     
 
 });
