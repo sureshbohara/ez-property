@@ -828,3 +828,481 @@ export default function AppNavigator() {
     </NavigationContainer>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// =========================================================================
+// FILE: src/theme/colors.js
+// =========================================================================
+export default {
+  brand: '#0d9488',
+  brandHover: '#0f766e',
+  white: '#ffffff',
+  dark: '#0f172a',
+  slate50: '#f8fafc',
+  slate100: '#f1f5f9',
+  slate200: '#e2e8f0',
+  slate500: '#64748b',
+  slate600: '#475569',
+  red500: '#ef4444',
+  green500: '#22c55e',
+};
+
+// =========================================================================
+// FILE: src/api/axiosClient.js
+// =========================================================================
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const BASE_URL = 'http://10.0.2.2:8000/api/v1'; // Android Emulator को लागि। Physical device मा आफ्नो PC को IP राख्नुहोला।
+const api = axios.create({
+  baseURL: BASE_URL,
+  headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+});
+
+api.interceptors.request.use(async (config) => {
+  const token = await AsyncStorage.getItem('access_token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+}, (error) => Promise.reject(error));
+
+export default api;
+
+// =========================================================================
+// FILE: src/api/index.js
+// =========================================================================
+import api from './axiosClient';
+
+export const loginUser = (credentials) => api.post('/login', credentials);
+export const registerUser = (data) => api.post('/register', data);
+export const logoutUser = () => api.post('/logout');
+export const fetchHomeData = () => api.get('/home');
+export const fetchAllProperties = () => api.get('/all-listing');
+export const fetchPropertyDetails = (slug) => api.get(`/listing/${slug}`);
+
+// =========================================================================
+// FILE: src/context/AuthContext.js
+// =========================================================================
+import React, { createContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loginUser, registerUser, logoutUser } from '../api';
+
+export const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => { loadUser(); }, []);
+
+  const loadUser = async () => {
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const userStr = await AsyncStorage.getItem('user_data');
+      if (token && userStr) setUser(JSON.parse(userStr));
+    } catch (e) { console.log('Failed to load user', e); }
+    finally { setIsLoading(false); }
+  };
+
+  const login = async (credentials) => {
+    const response = await loginUser(credentials);
+    const { token, user } = response.data;
+    await AsyncStorage.setItem('access_token', token);
+    await AsyncStorage.setItem('user_data', JSON.stringify(user));
+    setUser(user);
+    return response;
+  };
+
+  const register = async (data) => {
+    const response = await registerUser(data);
+    const { token, user } = response.data;
+    await AsyncStorage.setItem('access_token', token);
+    await AsyncStorage.setItem('user_data', JSON.stringify(user));
+    setUser(user);
+    return response;
+  };
+
+  const logout = async () => {
+    try { await logoutUser(); } catch (e) {}
+    await AsyncStorage.removeItem('access_token');
+    await AsyncStorage.removeItem('user_data');
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// =========================================================================
+// FILE: src/components/shared/Button.js
+// =========================================================================
+import React from 'react';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import colors from '../../theme/colors';
+
+export default function Button({ title, onPress, loading, variant = 'primary' }) {
+  const bgColor = variant === 'primary' ? colors.brand : colors.white;
+  const textColor = variant === 'primary' ? colors.white : colors.brand;
+  
+  return (
+    <TouchableOpacity style={[styles.button, { backgroundColor: bgColor }]} onPress={onPress} disabled={loading}>
+      {loading ? <ActivityIndicator color={textColor} /> : <Text style={[styles.text, { color: textColor }]}>{title}</Text>}
+    </TouchableOpacity>
+  );
+}
+const styles = StyleSheet.create({
+  button: { padding: 15, borderRadius: 8, alignItems: 'center', marginVertical: 10 },
+  text: { fontSize: 16, fontWeight: 'bold' }
+});
+
+// =========================================================================
+// FILE: src/components/shared/Input.js
+// =========================================================================
+import React from 'react';
+import { TextInput, StyleSheet, View } from 'react-native';
+import colors from '../../theme/colors';
+
+export default function Input({ placeholder, value, onChangeText, secureTextEntry, keyboardType = 'default' }) {
+  return (
+    <View style={styles.container}>
+      <TextInput style={styles.input} placeholder={placeholder} value={value} onChangeText={onChangeText} secureTextEntry={secureTextEntry} keyboardType={keyboardType} placeholderTextColor={colors.slate500} />
+    </View>
+  );
+}
+const styles = StyleSheet.create({
+  container: { marginVertical: 8 },
+  input: { borderWidth: 1, borderColor: colors.slate200, borderRadius: 8, padding: 12, fontSize: 16, backgroundColor: colors.white }
+});
+
+// =========================================================================
+// FILE: src/components/home/GuestHomeView.js
+// =========================================================================
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { fetchHomeData } from '../../api';
+import colors from '../../theme/colors';
+
+export default function GuestHomeView() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchHomeData().then(res => { setData(res.data.data); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
+  if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={colors.brand} /></View>;
+
+  return (
+    <FlatList
+      data={data?.featuredProperties || []}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={({ item }) => (
+        <View style={styles.card}>
+          <Image source={{ uri: item.image }} style={styles.image} />
+          <View style={styles.info}>
+            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.price}>NPR {item.base_price} / night</Text>
+          </View>
+        </View>
+      )}
+      ListHeaderComponent={<Text style={styles.header}>Featured Properties</Text>}
+      contentContainerStyle={{ paddingBottom: 20 }}
+    />
+  );
+}
+const styles = StyleSheet.create({
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  header: { fontSize: 20, fontWeight: 'bold', margin: 16, color: colors.dark },
+  card: { marginHorizontal: 16, marginBottom: 16, backgroundColor: colors.white, borderRadius: 12, overflow: 'hidden', elevation: 3 },
+  image: { width: '100%', height: 180 },
+  info: { padding: 12 },
+  title: { fontSize: 16, fontWeight: 'bold', color: colors.dark },
+  price: { fontSize: 14, color: colors.brand, marginTop: 4 }
+});
+
+// =========================================================================
+// FILE: src/components/home/HostHomeView.js
+// =========================================================================
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import colors from '../../theme/colors';
+
+export default function HostHomeView() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Host Dashboard</Text>
+      <Text style={styles.text}>Manage your properties and bookings here.</Text>
+    </View>
+  );
+}
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  title: { fontSize: 24, fontWeight: 'bold', color: colors.dark, marginBottom: 10 },
+  text: { fontSize: 16, color: colors.slate600, textAlign: 'center' }
+});
+
+// =========================================================================
+// FILE: src/components/home/AdminHomeView.js
+// =========================================================================
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import colors from '../../theme/colors';
+
+export default function AdminHomeView() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Admin Dashboard</Text>
+      <Text style={styles.text}>System-wide statistics and management.</Text>
+    </View>
+  );
+}
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  title: { fontSize: 24, fontWeight: 'bold', color: colors.dark, marginBottom: 10 },
+  text: { fontSize: 16, color: colors.slate600, textAlign: 'center' }
+});
+
+// =========================================================================
+// FILE: src/screens/auth/LoginScreen.js
+// =========================================================================
+import React, { useState, useContext } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { AuthContext } from '../../context/AuthContext';
+import Input from '../../components/shared/Input';
+import Button from '../../components/shared/Button';
+import colors from '../../theme/colors';
+
+export default function LoginScreen({ navigation }) {
+  const { login } = useContext(AuthContext);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) return alert('Please fill all fields');
+    setLoading(true);
+    try {
+      await login({ email, password });
+    } catch (error) {
+      alert('Login failed. Check credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Welcome Back</Text>
+      <Input placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
+      <Input placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
+      <Button title="Login" onPress={handleLogin} loading={loading} />
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <Text style={styles.link}>Don't have an account? Register</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+}
+const styles = StyleSheet.create({
+  container: { flexGrow: 1, padding: 20, justifyContent: 'center', backgroundColor: colors.slate50 },
+  title: { fontSize: 28, fontWeight: 'bold', color: colors.dark, marginBottom: 30, textAlign: 'center' },
+  link: { textAlign: 'center', color: colors.brand, marginTop: 20, fontSize: 16 }
+});
+
+// =========================================================================
+// FILE: src/screens/auth/RegisterScreen.js
+// =========================================================================
+import React, { useState, useContext } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { AuthContext } from '../../context/AuthContext';
+import Input from '../../components/shared/Input';
+import Button from '../../components/shared/Button';
+import colors from '../../theme/colors';
+
+export default function RegisterScreen({ navigation }) {
+  const { register } = useContext(AuthContext);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async () => {
+    if (!name || !email || !phone || !password) return alert('Please fill all fields');
+    setLoading(true);
+    try {
+      await register({ name, email, phone, password, password_confirmation: password });
+    } catch (error) {
+      alert('Registration failed. Email might be taken.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Create Account</Text>
+      <Input placeholder="Full Name" value={name} onChangeText={setName} />
+      <Input placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
+      <Input placeholder="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+      <Input placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
+      <Button title="Register" onPress={handleRegister} loading={loading} />
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <Text style={styles.link}>Already have an account? Login</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+}
+const styles = StyleSheet.create({
+  container: { flexGrow: 1, padding: 20, justifyContent: 'center', backgroundColor: colors.slate50 },
+  title: { fontSize: 28, fontWeight: 'bold', color: colors.dark, marginBottom: 20, textAlign: 'center' },
+  link: { textAlign: 'center', color: colors.brand, marginTop: 20, fontSize: 16 }
+});
+
+// =========================================================================
+// FILE: src/screens/main/HomeScreen.js
+// =========================================================================
+import React, { useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext';
+import GuestHomeView from '../../components/home/GuestHomeView';
+import HostHomeView from '../../components/home/HostHomeView';
+import AdminHomeView from '../../components/home/AdminHomeView';
+
+export default function HomeScreen() {
+  const { user } = useContext(AuthContext);
+  if (user?.role === 'guest') return <GuestHomeView />;
+  if (user?.role === 'host') return <HostHomeView />;
+  if (user?.role === 'admin') return <AdminHomeView />;
+  return null;
+}
+
+// =========================================================================
+// FILE: src/navigation/AppNavigator.js
+// =========================================================================
+import React, { useContext } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { AuthContext } from '../context/AuthContext';
+import LoginScreen from '../screens/auth/LoginScreen';
+import RegisterScreen from '../screens/auth/RegisterScreen';
+import HomeScreen from '../screens/main/HomeScreen';
+import colors from '../theme/colors';
+
+const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
+
+function MainTabs() {
+  return (
+    <Tab.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.brand, tabBarInactiveTintColor: colors.slate500 }}>
+      <Tab.Screen name="HomeTab" component={HomeScreen} options={{ tabBarLabel: 'Explore' }} />
+      <Tab.Screen name="SavedTab" component={HomeScreen} options={{ tabBarLabel: 'Saved' }} />
+      <Tab.Screen name="TripsTab" component={HomeScreen} options={{ tabBarLabel: 'Trips' }} />
+      <Tab.Screen name="ProfileTab" component={HomeScreen} options={{ tabBarLabel: 'Profile' }} />
+    </Tab.Navigator>
+  );
+}
+
+export default function AppNavigator() {
+  const { user, isLoading } = useContext(AuthContext);
+  if (isLoading) return null; 
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {user ? (
+          <Stack.Screen name="Main" component={MainTabs} />
+        ) : (
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+// =========================================================================
+// FILE: App.js (Root Entry Point)
+// =========================================================================
+import React from 'react';
+import { SafeAreaView, StyleSheet } from 'react-native';
+import { AuthProvider } from './src/context/AuthContext';
+import AppNavigator from './src/navigation/AppNavigator';
+import colors from './src/theme/colors';
+
+export default function App() {
+  return (
+    <SafeAreaView style={styles.container}>
+      <AuthProvider>
+        <AppNavigator />
+      </AuthProvider>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.slate50 },
+});
