@@ -13,7 +13,7 @@
 
     <ul class="metismenu" id="menu">
 
-   
+        {{-- === OVERVIEW === --}}
         <li class="{{ request()->routeIs('admin.dashboard') ? 'mm-active' : '' }}">
             <a href="{{ route('admin.dashboard') }}">
                 <div class="parent-icon"><i class="bi bi-speedometer2"></i></div>
@@ -21,8 +21,17 @@
             </a>
         </li>
 
+        {{-- === PROPERTY & BOOKINGS === --}}
         @canany(['listing.read', 'amenity.read'])
-        <li class="menu-label">Property & Listings</li>
+        <li class="menu-label">Property & Bookings</li>
+
+        <li class="{{ request()->routeIs('listing.booking.*') ? 'mm-active' : '' }}">
+            <a href="{{ route('listing.booking.index') }}">
+                <div class="parent-icon"><i class="bi bi-calendar-check-fill"></i></div>
+                <div class="menu-title">Manage Bookings</div>
+            </a>
+        </li>
+        
         <li class="{{ request()->routeIs(['listing.listing.*', 'listing.amenity.*','listing.availabilities.*']) ? 'mm-active' : '' }}">
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class="bi bi-buildings"></i></div>
@@ -33,22 +42,21 @@
                 <li class="{{ request()->routeIs('listing.listing.*') ? 'mm-active' : '' }}">
                     <a href="{{ route('listing.listing.index') }}"><i class="bi bi-house-door"></i> All Listings</a>
                 </li>
-           
                 <li class="{{ request()->routeIs('listing.availabilities.*') ? 'mm-active' : '' }}">
-                    <a href="{{ route('listing.availabilities.index') }}"><i class="bi bi-calendar-check"></i> Availabilities</a>
+                    <a href="{{ route('listing.availabilities.index') }}"><i class="bi bi-calendar3"></i> Availabilities</a>
                 </li>
                 @endcan
 
                 @can('amenity.read')
                 <li class="{{ request()->routeIs('listing.amenity.*') ? 'mm-active' : '' }}">
-                    <a href="{{ route('listing.amenity.index') }}"><i class="bi bi-check-circle"></i> Amenities</a>
+                    <a href="{{ route('listing.amenity.index') }}"><i class="bi bi-stars"></i> Amenities</a>
                 </li>
                 @endcan
             </ul>
         </li>
         @endcanany
 
-      
+        {{-- === E-COMMERCE === --}}
         @canany(['brand.read', 'product.read', 'offer.read', 'coupon.read'])
         <li class="menu-label">E-Commerce</li>
 
@@ -69,7 +77,7 @@
 
                 @can('brand.read')
                 <li class="{{ request()->routeIs('ecom.brand.*') ? 'mm-active' : '' }}">
-                    <a href="{{ route('ecom.brand.index') }}"><i class="bi bi-bookmark"></i> Brands</a>
+                    <a href="{{ route('ecom.brand.index') }}"><i class="bi bi-bookmark-star"></i> Brands</a>
                 </li>
                 @endcan
             </ul>
@@ -98,7 +106,7 @@
         @endcanany
         @endcanany
 
-     
+        {{-- === TOUR & TRAVEL === --}}
         @canany(['category.read', 'package.read'])
         <li class="menu-label">Tour & Travel</li>
         <li class="{{ request()->routeIs(['admin.category.*', 'admin.package.*', 'admin.fix-depature-package', 'admin.package.prices']) ? 'mm-active' : '' }}">
@@ -128,11 +136,10 @@
         </li>
         @endcanany
 
-     
+        {{-- === CONTENT MANAGEMENT === --}}
         @canany(['page.read', 'post.read', 'service.read', 'fleet.read', 'banner.read', 'faq.read', 'review.read', 'gallery.read', 'team.read', 'menu.read'])
-        <li class="menu-label">Content</li>
+        <li class="menu-label">Content Management</li>
 
-        {{-- Core Pages & Posts --}}
         <li class="{{ request()->routeIs(['admin.page.*', 'admin.post.*']) ? 'mm-active' : '' }}">
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class="bi bi-file-earmark-richtext"></i></div>
@@ -141,7 +148,7 @@
             <ul>
                 @can('page.read')
                 <li class="{{ request()->routeIs('admin.page.*') ? 'mm-active' : '' }}">
-                    <a href="{{ route('admin.page.index') }}"><i class="bi bi-file-earmark-richtext"></i> Pages</a>
+                    <a href="{{ route('admin.page.index') }}"><i class="bi bi-file-earmark-text"></i> Pages</a>
                 </li>
                 @endcan
 
@@ -153,7 +160,6 @@
             </ul>
         </li>
 
-   
         <li class="{{ request()->routeIs(['admin.service.*', 'admin.fleet.*']) ? 'mm-active' : '' }}">
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class="bi bi-briefcase"></i></div>
@@ -162,7 +168,7 @@
             <ul>
                 @can('service.read')
                 <li class="{{ request()->routeIs('admin.service.*') ? 'mm-active' : '' }}">
-                    <a href="{{ route('admin.service.index') }}"><i class="bi bi-briefcase"></i> Services</a>
+                    <a href="{{ route('admin.service.index') }}"><i class="bi bi-wrench-adjustable"></i> Services</a>
                 </li>
                 @endcan
 
@@ -174,7 +180,6 @@
             </ul>
         </li>
 
-    
         <li class="{{ request()->routeIs(['admin.banner.*', 'admin.faq.*', 'admin.review.*', 'admin.gallery.*', 'admin.team.*']) ? 'mm-active' : '' }}">
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class="bi bi-grid-3x3-gap"></i></div>
@@ -183,19 +188,19 @@
             <ul>
                 @can('banner.read')
                 <li class="{{ request()->routeIs('admin.banner.*') ? 'mm-active' : '' }}">
-                    <a href="{{ route('admin.banner.index') }}"><i class="bi bi-image"></i> Banners</a>
+                    <a href="{{ route('admin.banner.index') }}"><i class="bi bi-card-image"></i> Banners</a>
                 </li>
                 @endcan
 
                 @can('faq.read')
                 <li class="{{ request()->routeIs('admin.faq.*') ? 'mm-active' : '' }}">
-                    <a href="{{ route('admin.faq.index') }}"><i class="bi bi-chat-square-text"></i> FAQs</a>
+                    <a href="{{ route('admin.faq.index') }}"><i class="bi bi-question-circle"></i> FAQs</a>
                 </li>
                 @endcan
 
                 @can('review.read')
                 <li class="{{ request()->routeIs('admin.review.*') ? 'mm-active' : '' }}">
-                    <a href="{{ route('admin.review.index') }}"><i class="bi bi-star"></i> Reviews</a>
+                    <a href="{{ route('admin.review.index') }}"><i class="bi bi-star-half"></i> Reviews</a>
                 </li>
                 @endcan
 
@@ -213,29 +218,28 @@
             </ul>
         </li>
 
-     
         @can('menu.read')
         <li class="{{ request()->routeIs('admin.menu.*') ? 'mm-active' : '' }}">
             <a href="{{ route('admin.menu.index') }}">
-                <div class="parent-icon"><i class="bi bi-list-nested"></i></div>
+                <div class="parent-icon"><i class="bi bi-menu-button-wide"></i></div>
                 <div class="menu-title">Menus</div>
             </a>
         </li>
         @endcan
         @endcanany
 
-     
+        {{-- === MARKETING === --}}
         @canany(['marketing.read'])
         <li class="menu-label">Marketing</li>
         <li class="{{ request()->routeIs('admin.marketing.*') ? 'mm-active' : '' }}">
             <a href="{{ route('admin.marketing.index') }}">
-                <div class="parent-icon"><i class="bi bi-megaphone"></i></div>
+                <div class="parent-icon"><i class="bi bi-envelope-paper"></i></div>
                 <div class="menu-title">Email Marketing</div>
             </a>
         </li>
         @endcanany
 
-       
+        {{-- === ADMINISTRATION === --}}
         @canany(['user.read', 'permission.read'])
         <li class="menu-label">Administration</li>
         <li class="{{ request()->routeIs(['admin.user.*', 'admin.permission.*']) ? 'mm-active' : '' }}">
@@ -259,7 +263,7 @@
         </li>
         @endcanany
 
-      
+        {{-- === SYSTEM === --}}
         @canany(['setting.read'])
         <li class="menu-label">System</li>
         <li class="{{ request()->routeIs(['admin.settings.*', 'admin.site.health', 'admin.login-activities.*']) ? 'mm-active' : '' }}">

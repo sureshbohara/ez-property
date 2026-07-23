@@ -1,15 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler } from 'chart.js'; 
 import { FiHome, FiCalendar, FiDollarSign, FiStar, FiTrendingUp, FiHeart, FiUser, FiMapPin } from 'react-icons/fi';
+import { formatPrice } from '@/Utils/helpers';
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
 
 export default function Overview({ role, stats, bookings, earningsData, reviews, savedCount }) {
+    
+    // Currency State
+    const [currency, setCurrency] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('selectedCurrency') || 'NPR';
+        }
+        return 'NPR';
+    });
+
+    useEffect(() => {
+        const handleCurrencyChange = () => {
+            setCurrency(localStorage.getItem('selectedCurrency') || 'NPR');
+        };
+        window.addEventListener('currencyChanged', handleCurrencyChange);
+        return () => window.removeEventListener('currencyChanged', handleCurrencyChange);
+    }, []);
+
+    const formatCurrency = (amount) => {
+        const val = parseFloat(amount) || 0;
+        if (currency === 'USD') return `$${(val * 0.0075).toFixed(2)}`;
+        if (currency === 'INR') return `₹${Math.round(val * 0.625)}`;
+        return formatPrice(val); 
+    };
+
     const chartData = {
         labels: earningsData?.map(d => d.date) || [],
         datasets: [{
-            label: 'Earnings (Rs)',
+            label: `Earnings (${currency})`,
             data: earningsData?.map(d => d.earning) || [],
             borderColor: 'rgb(13, 148, 136)',
             backgroundColor: 'rgba(13, 148, 136, 0.08)',
@@ -34,7 +60,7 @@ export default function Overview({ role, stats, bookings, earningsData, reviews,
                     <>
                     <StatCard icon={<FiHome />} title="Properties" value={stats.total_properties} color="text-blue-600 bg-blue-50" />
                     <StatCard icon={<FiCalendar />} title="Bookings" value={stats.total_bookings} color="text-purple-600 bg-purple-50" />
-                    <StatCard icon={<FiDollarSign />} title="Total Earned" value={`Rs ${stats.total_earnings}`} color="text-green-600 bg-green-50" />
+                    <StatCard icon={<FiDollarSign />} title="Total Earned" value={formatCurrency(stats.total_earnings)} color="text-green-600 bg-green-50" />
                     <StatCard icon={<FiStar />} title="Avg Rating" value={stats.avg_rating} color="text-amber-500 bg-amber-50" />
                     </>
                 ) : (
@@ -58,7 +84,7 @@ export default function Overview({ role, stats, bookings, earningsData, reviews,
                 <div className="p-6 border-b border-slate-100"><h3 className="text-lg font-bold text-slate-800">Recent Activity</h3></div>
                 {bookings?.length > 0 ? (
                     <div className="divide-y divide-slate-100">
-                        {bookings.slice(0, 3).map(b => <BookingRow key={b.id} booking={b} role={role} compact />)}
+                        {bookings.slice(0, 3).map(b => <BookingRow key={b.id} booking={b} role={role} compact formatCurrency={formatCurrency} />)}
                     </div>
                 ) : <div className="p-10 text-center text-slate-500">No recent activity.</div>}
             </div>
@@ -78,9 +104,10 @@ function StatCard({ icon, title, value, color }) {
     );
 }
 
-function BookingRow({ booking, role, compact }) {
+function BookingRow({ booking, role, compact, formatCurrency }) {
     const item = booking.listing || booking.property;
     const otherUser = role === 'host' ? booking.user : (item?.host || item?.user); 
+    
     return (
         <div className={`p-5 flex flex-col sm:flex-row gap-4 sm:items-center hover:bg-slate-50 transition-colors ${compact ? 'py-4' : ''}`}>
             <img src={item?.image_url || 'https://via.placeholder.com/150'} alt={item?.title} className="w-full sm:w-24 h-32 sm:h-24 rounded-lg object-cover flex-shrink-0 bg-slate-100" />
@@ -98,7 +125,7 @@ function BookingRow({ booking, role, compact }) {
                 <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
                     booking.status === 'confirmed' || booking.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
                 }`}>{booking.status}</span>
-                <span className="font-bold text-slate-800 text-lg">Rs {booking.total_price || booking.total || 0}</span>
+                <span className="font-bold text-slate-800 text-lg">{formatCurrency(booking.total_price || booking.total || 0)}</span>
             </div>
         </div>
     );

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Listing\ListingController;
 use App\Http\Controllers\Listing\AmenityController;
 use App\Http\Controllers\Listing\AvailabilityController;
+use App\Http\Controllers\Listing\BookingController;
 Route::prefix('admin/listing')->middleware(['auth:admin'])->name('listing.')->group(function () {
     // ─── Amenities ───────────────────────────────
     Route::post('amenity/status', [AmenityController::class, 'toggleStatus'])->name('amenity.status');
@@ -23,5 +24,11 @@ Route::prefix('admin/listing')->middleware(['auth:admin'])->name('listing.')->gr
     Route::post('availabilities', [AvailabilityController::class, 'store'])->name('availabilities.store');
     Route::post('availabilities/status', [AvailabilityController::class, 'toggleStatus'])->name('availabilities.status');
     Route::delete('availabilities/{id}', [AvailabilityController::class, 'destroy'])->name('availabilities.destroy');
+
+
+     // ─── Bookings ────────────────────────────────
+    Route::get('booking', [BookingController::class, 'index'])->name('booking.index');
+    Route::post('booking/{id}/status', [BookingController::class, 'updateStatus'])->name('booking.status');
+    Route::delete('booking/{id}', [BookingController::class, 'destroy'])->name('booking.destroy');
 
 });

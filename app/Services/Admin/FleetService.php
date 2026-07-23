@@ -23,6 +23,9 @@ class FleetService
     public function storeFleet(array $data){
         return DB::transaction(function () use ($data) {
             
+
+            $data['highlight'] = array_key_exists('highlight', $data) ? $data['highlight'] : [];
+
             if (empty($data['slug']) && !empty($data['title'])) {
                 $data['slug'] = $this->generateUniqueSlug($data['title']);
             }
@@ -49,6 +52,10 @@ class FleetService
             
             if (!empty($data['title']) && $data['title'] !== $fleet->title && empty($data['slug'])) {
                 $data['slug'] = $this->generateUniqueSlug($data['title'], $id);
+            }
+
+             if (!array_key_exists('highlight', $data)) {
+                $data['highlight'] = [];
             }
             
             if (isset($data['image']) && $data['image'] instanceof UploadedFile) {

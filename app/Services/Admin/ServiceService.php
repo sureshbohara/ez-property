@@ -11,7 +11,8 @@ class ServiceService
 {
     public function __construct(protected Service $service, protected MediaService $mediaService) {}
 
-    public function getServices(array $filters = []){
+    public function getServices(array $filters = [])
+    {
         return $this->service->query()
             ->when(!empty($filters['status']), fn($q) => $q->where('status', filter_var($filters['status'], FILTER_VALIDATE_BOOLEAN)))
             ->when(!empty($filters['title']), fn($q) => $q->where('title', 'like', '%'.$filters['title'].'%'))
@@ -22,7 +23,20 @@ class ServiceService
 
     public function storeService(array $data){
         return DB::transaction(function () use ($data) {
-                       
+            
+            $data['highlight'] = array_key_exists('highlight', $data) ? $data['highlight'] : [];
+            $data['process_item'] = array_key_exists('process_item', $data) ? $data['process_item'] : [];
+
+            if (isset($data['process_item']) && is_array($data['process_item'])) {
+                foreach ($data['process_item'] as $key => $item) {
+                    if (isset($item['image']) && $item['image'] instanceof UploadedFile) {
+                        $path = $this->mediaService->uploadImage($item['image']);
+                        $this->mediaService->dispatchImageProcessing($path);
+                        $data['process_item'][$key]['image'] = $path;
+                    }
+                }
+            }
+
             if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
                 $path = $this->mediaService->uploadImage($data['image']);
                 $this->mediaService->dispatchImageProcessing($path);
@@ -43,6 +57,30 @@ class ServiceService
         return DB::transaction(function () use ($id, $data) {
             $service = $this->service->findOrFail($id);
 
+            if (!array_key_exists('highlight', $data)) {
+                $data['highlight'] = [];
+            }
+            if (!array_key_exists('process_item', $data)) {
+                $data['process_item'] = [];
+            }
+
+            if (isset($data['process_item']) && is_array($data['process_item'])) {
+                $existingProcessItems = $service->process_item ?? [];
+                foreach ($data['process_item'] as $key => $item) {
+
+                    if (isset($item['image']) && $item['image'] instanceof UploadedFile) {
+                        if (isset($existingProcessItems[$key]['image'])) {
+                            $this->mediaService->deleteImageVariants($existingProcessItems[$key]['image']);
+                        }
+                        $path = $this->mediaService->uploadImage($item['image']);
+                        $this->mediaService->dispatchImageProcessing($path);
+                        $data['process_item'][$key]['image'] = $path;
+                    } 
+                    elseif (!isset($item['image']) && isset($existingProcessItems[$key]['image'])) {
+                        $data['process_item'][$key]['image'] = $existingProcessItems[$key]['image'];
+                    }
+                }
+            }
             
             if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
                 $this->mediaService->deleteImageVariants($service->image);
@@ -67,15 +105,13 @@ class ServiceService
             } else {
                 unset($data['feature_image']);
             }
-            
             $service->update($data);
             return $service->fresh();
         });
     }
 
 
-    public function deleteService(int $id): bool
-    {
+    public function deleteService(int $id): bool{
         $service = $this->service->findOrFail($id);
         
         if ($service->image) {
@@ -105,7 +141,4 @@ class ServiceService
         $service->save();
         return true;
     }
-
-
-    
 }

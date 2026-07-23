@@ -1,15 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import { FiCalendar, FiUser, FiMapPin } from 'react-icons/fi';
+import { formatPrice } from '@/Utils/helpers'; 
 
 export default function Reservations({ role, bookings }) {
+    
+    // Currency State
+    const [currency, setCurrency] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('selectedCurrency') || 'NPR';
+        }
+        return 'NPR';
+    });
+
+    useEffect(() => {
+        const handleCurrencyChange = () => {
+            setCurrency(localStorage.getItem('selectedCurrency') || 'NPR');
+        };
+        window.addEventListener('currencyChanged', handleCurrencyChange);
+        return () => window.removeEventListener('currencyChanged', handleCurrencyChange);
+    }, []);
+
+    const formatCurrency = (amount) => {
+        const val = parseFloat(amount) || 0;
+        if (currency === 'USD') return `$${(val * 0.0075).toFixed(2)}`;
+        if (currency === 'INR') return `₹${Math.round(val * 0.625)}`;
+        return formatPrice(val); 
+    };
+
     return (
         <div className="space-y-6">
             <h1 className="text-2xl font-bold text-slate-900">{role === 'host' ? 'Reservations' : 'My Trips'}</h1>
             <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                 {bookings?.length > 0 ? (
                     <div className="divide-y divide-slate-100">
-                        {bookings.map(b => <BookingRow key={b.id} booking={b} role={role} />)}
+                        {bookings.map(b => <BookingRow key={b.id} booking={b} role={role} formatCurrency={formatCurrency} />)}
                     </div>
                 ) : (
                     <div className="p-16 text-center">
@@ -23,7 +48,7 @@ export default function Reservations({ role, bookings }) {
     );
 }
 
-function BookingRow({ booking, role }) {
+function BookingRow({ booking, role, formatCurrency }) {
     const item = booking.listing || booking.property;
     const otherUser = role === 'host' ? booking.user : (item?.host || item?.user); 
     
@@ -44,7 +69,7 @@ function BookingRow({ booking, role }) {
                 <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
                     booking.status === 'confirmed' || booking.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
                 }`}>{booking.status}</span>
-                <span className="font-bold text-slate-800 text-lg">Rs {booking.total_price || booking.total || 0}</span>
+                <span className="font-bold text-slate-800 text-lg">{formatCurrency(booking.total_price || booking.total || 0)}</span>
             </div>
         </div>
     );
