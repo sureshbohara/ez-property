@@ -3,19 +3,29 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import FrontLayout from '@/Layouts/FrontLayout';
 import Breadcrumb from '../Components/Shared/Breadcrumb';
 import { FiMail, FiPhone, FiMapPin, FiSend, FiLoader, FiClock } from 'react-icons/fi';
+import toast from 'react-hot-toast'; 
 
 export default function ContactUs({ page, metaTitle }) {
     const { setting } = usePage().props;
-
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '', email: '', subject: '', message: ''
     });
-
     const submit = (e) => {
         e.preventDefault();
         post('/contact-submit', {
             preserveScroll: true,
-            onSuccess: () => reset(),
+            onSuccess: (page) => {
+                if (page.props.flash?.success) {
+                    toast.success(page.props.flash.success);
+                    reset();
+                } 
+                else if (page.props.flash?.error) {
+                    toast.error(page.props.flash.error);
+                }
+            },
+            onError: (errors) => {
+                toast.error('Please check the form for errors and try again.');
+            }
         });
     };
 

@@ -19,7 +19,7 @@ class ContactMessage extends Mailable
 
     public function build()
     {
-        return $this->subject('New Contact Form Submission - EzProperty')
+        return $this->subject('New Contact Form Submission from ' . $this->contactData['name'] . ' - EzProperty')
             ->replyTo($this->contactData['email'], $this->contactData['name'])
             ->view('emails.contact_message')
             ->with('contactData', $this->contactData);

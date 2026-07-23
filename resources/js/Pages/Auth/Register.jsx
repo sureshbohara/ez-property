@@ -53,7 +53,7 @@ export default function Register() {
                     Back to Home
                 </Link>
 
-                <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
+                <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
                     
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center justify-center w-12 h-12 bg-brand/10 rounded-xl mb-4">

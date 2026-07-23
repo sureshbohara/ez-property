@@ -314,10 +314,8 @@ class HomeController extends Controller
 
      public function contactSubmit(ContactFormRequest $request){
         try {
-            $adminEmails = ['boharas371@gmail.com','vron371@gmail.com'];
-            Mail::to($adminEmails)->send(
-                new ContactMessage($request->validated())
-            );
+            $adminEmails = ['boharas371@gmail.com'];
+            Mail::to($adminEmails)->send(new ContactMessage($request->validated()));
             return back()->with('success','Your message has been received. We will contact you soon!');
         } catch (\Exception $e) {
             Log::error('Contact Mail Error: ' . $e->getMessage());

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { formatPrice } from '../../Utils/helpers';
-
+import { router } from '@inertiajs/react';
 export default function BookingCard({ 
     listing, 
     calendarData, 
@@ -99,6 +99,17 @@ export default function BookingCard({
         else if (type === 'children' && newValue >= 0 && newValue <= 10) setGuests({...guests, children: newValue});
     };
 
+
+    const handleReserve = () => {
+        if (pricingDetails.hasBlockedDates || !checkIn || !checkOut) return;
+        router.get('/checkout', {
+            listing_id: listing.id,
+            check_in: checkIn,
+            check_out: checkOut,
+            guests: totalGuests
+        });
+    };
+
     const formatDate = (dateStr) => {
         if (!dateStr) return "Add dates";
         const d = new Date(dateStr);
@@ -106,14 +117,14 @@ export default function BookingCard({
     };
 
     const displayPrice = checkIn && checkOut && pricingDetails.nights > 0
-        ? pricingDetails.avgPricePerNight 
-        : basePrice;
+    ? pricingDetails.avgPricePerNight 
+    : basePrice;
 
     return (
         <div className="sticky top-24 z-30 border border-slate-200 rounded-2xl shadow-xl p-6 bg-white">
             <div className="flex items-baseline justify-between mb-6">
                 <div>
-       
+                 
                     <span className="text-2xl font-bold text-dark">{formatCurrency(displayPrice)}</span>
                     <span className="text-slate-600"> / night</span>
                     
@@ -121,7 +132,7 @@ export default function BookingCard({
                         <div className="mt-1 text-xs text-brand font-medium flex items-center gap-1">
                             <i className="fa-solid fa-tag"></i> Special rate applied
                         </div>
-                    )}
+                        )}
                 </div>
             </div>
 
@@ -130,7 +141,7 @@ export default function BookingCard({
                     <i className="fa-solid fa-triangle-exclamation mt-0.5"></i>
                     <span>Some selected dates are unavailable. Please choose different dates.</span>
                 </div>
-            )}
+                )}
 
             <div className="relative mb-4">
                 <div className="border border-slate-300 rounded-xl">
@@ -180,10 +191,11 @@ export default function BookingCard({
                             </div>
                         </div>
                     </div>
-                )}
+                    )}
             </div>
             
             <button 
+                onClick={handleReserve}
                 disabled={pricingDetails.hasBlockedDates || !checkIn || !checkOut}
                 className={`w-full font-bold py-3.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 ${
                     pricingDetails.hasBlockedDates || !checkIn || !checkOut 
@@ -216,7 +228,7 @@ export default function BookingCard({
                         <span>{formatCurrency(pricingDetails.grandTotal)}</span>
                     </div>
                 </div>
-            )}
+                )}
         </div>
-    );
+        );
 }

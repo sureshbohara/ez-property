@@ -7,9 +7,33 @@ use App\Http\Controllers\Front\UserController;
 use App\Http\Controllers\Front\PropertyController;
 use App\Http\Controllers\Front\DashboardController;
 use App\Http\Controllers\Front\CmsPageController;
+use App\Http\Controllers\Front\CheckoutController;
 use Illuminate\Support\Facades\Mail;
 
-// Frontend Routes
+// ============================================
+// AUTHENTICATION ROUTES 
+// ============================================
+Route::get('/login', [UserController::class, 'showLogin'])->name('login');
+Route::post('/login', [UserController::class, 'login']);
+
+Route::get('/register', [UserController::class, 'showRegister'])->name('register');
+Route::post('/register', [UserController::class, 'register']);
+
+// Forgot Password Routes
+Route::get('/forgot-password', [UserController::class, 'create'])->name('password.request');
+Route::post('/forgot-password', [UserController::class, 'store'])->name('password.email');
+
+// Reset Password Routes
+Route::get('/reset-password/{token}', [UserController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [UserController::class, 'updateResetPassword'])->name('password.update');
+
+// Logout Route (Needs to be accessible when logged in)
+Route::post('/logout', [UserController::class, 'logout'])->name('logout');
+
+
+// ============================================
+// FRONTEND ROUTES
+// ============================================
 Route::name('front.')->group(function () {
 
     Route::get('/', [HomeController::class, 'homePage'])->name('home');
@@ -22,23 +46,10 @@ Route::name('front.')->group(function () {
     Route::get('/faqs', [HomeController::class, 'faqsPage'])->name('faqs');
     Route::post('/contact-submit', [HomeController::class, 'contactSubmit'])->name('contact.submit');
 
-
-  
-
-    // ============================================
-    // AUTHENTICATION ROUTES
-    // ============================================
-    Route::get('/login', [UserController::class, 'showLogin'])->name('login');
-    Route::post('/login', [UserController::class, 'login']);
-    
-    Route::get('/register', [UserController::class, 'showRegister'])->name('register');
-    Route::post('/register', [UserController::class, 'register']);
-
     Route::middleware('auth')->group(function () {
-        Route::post('/logout', [UserController::class, 'logout'])->name('logout');
+        
+        // Reviews, Profile, Password Updates
         Route::post('/property/{listing}/reviews', [HomeController::class, 'storeReview'])->name('property.reviews.store');
-
-
         Route::post('/account/profile', [UserController::class, 'updateProfile'])->name('account.profile.update');
         Route::post('/account/password', [UserController::class, 'updatePassword'])->name('account.password.update');
 
@@ -46,25 +57,26 @@ Route::name('front.')->group(function () {
         Route::get('/become-host', [UserController::class, 'showBecomeHost'])->name('become.host');
         Route::post('/become-host', [UserController::class, 'upgradeToHost'])->name('upgrade.host');
 
+        // Property Management Routes
         Route::get('/properties/create', [PropertyController::class, 'create'])->name('properties.create');
         Route::post('/properties', [PropertyController::class, 'storeProperty'])->name('properties.store');
         Route::get('/properties/{id}/edit', [PropertyController::class, 'edit'])->name('properties.edit');
         Route::put('/properties/{id}', [PropertyController::class, 'update'])->name('properties.update');
         Route::post('/properties/{id}/delete-gallery', [PropertyController::class, 'deleteGalleryImage'])->name('properties.delete-gallery');
 
-
         Route::get('/my-listings', [PropertyController::class, 'myListings'])->name('properties.my-listings');
         Route::post('/properties/{id}/save', [PropertyController::class, 'toggleSave'])->name('properties.save');
-
         
+        // Dashboard & Messaging
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
         Route::get('/messages/{userId}', [DashboardController::class, 'showConversation'])->name('messages.show');
         Route::post('/messages', [DashboardController::class, 'storeMessage'])->name('messages.store');
 
-       
 
 
+
+        Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+        Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
     });
 });

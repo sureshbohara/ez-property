@@ -6,15 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Services\Admin\MediaService;
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
     protected $mediaService;
-
 
     public function __construct(MediaService $mediaService)
     {
@@ -31,7 +32,7 @@ class UserController extends Controller
             'password' => 'required',
             'remember' => 'boolean',
         ]);
-        
+
         if (Auth::attempt(
             ['email' => $request->email, 'password' => $request->password],
             $request->boolean('remember')
@@ -44,6 +45,75 @@ class UserController extends Controller
             'email' => ['The provided credentials do not match our records.'],
         ]);
     }
+
+    
+
+    // =========================================
+    // FORGOT PASSWORD METHODS
+    // =========================================
+    public function create() {
+        return Inertia::render('Auth/ForgotPassword');
+    }
+
+    public function store(Request $request) {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        if ($status == Password::RESET_LINK_SENT) {
+            return back()->with('success', __($status));
+        }
+
+        throw ValidationException::withMessages([
+            'email' => [__($status)],
+        ]);
+    }
+
+
+
+    // =========================================
+    // RESET PASSWORD METHODS
+    // =========================================
+    public function showResetForm(Request $request, $token) {
+        return Inertia::render('Auth/ResetPassword', [
+            'token' => $token,
+            'email' => $request->email,
+        ]);
+    }
+
+    public function updateResetPassword(Request $request) {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+            }
+        );
+
+        if ($status == Password::PASSWORD_RESET) {
+            return redirect('/login')->with('success', __($status));
+        }
+
+        throw ValidationException::withMessages([
+            'email' => [__($status)],
+        ]);
+    }
+
+
+
 
     public function showRegister() {
         return Inertia::render('Auth/Register');
@@ -78,11 +148,10 @@ class UserController extends Controller
     }
 
 
+
     public function showBecomeHost() {
         return Inertia::render('Auth/BecomeHost');
     }
-
-
     public function upgradeToHost(Request $request) {
         $user = $request->user();
         if ($user->role === 'guest') {
@@ -91,6 +160,7 @@ class UserController extends Controller
         }
         return redirect()->route('front.properties.create')->with('success', 'You are now a host! List your first property.');
     }
+
 
 
     public function updateProfile(Request $request){
@@ -115,8 +185,8 @@ class UserController extends Controller
             $data['image'] = $path;
         }
         $user->update($data);
-
     }
+
 
 
     public function updatePassword(Request $request){
@@ -132,5 +202,6 @@ class UserController extends Controller
         }
         $user->update(['password' => Hash::make($request->password)]);
     }
-    
+
+
 }
