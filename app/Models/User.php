@@ -6,12 +6,14 @@ use App\Traits\HasImages;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+
 class User extends Authenticatable
 {
-    use Notifiable, HasImages,HasApiTokens;
+    use Notifiable, HasImages, HasApiTokens;
 
     protected $fillable = [
         'name', 'email', 'phone', 'address','gender','details', 'image', 'role', 'password',
+        'pan_number', 'citizenship_number', 'host_status', 
     ];
 
     protected $hidden = [
@@ -41,9 +43,7 @@ class User extends Authenticatable
         return $this->hasMany(Listing::class, 'user_id');
     }
 
-   public function savedListings() {
-     return $this->belongsToMany(Listing::class, 'saved_listings')->withTimestamps();
-   }
-   
-
+    public function savedListings() {
+        return $this->belongsToMany(Listing::class, 'saved_listings')->withTimestamps();
+    }
 }

@@ -6,6 +6,10 @@ git push origin main
 
 
 
+//local to server
+npm install
+npm run build
+composer install --no-dev --optimize-autoloader
 
 
 

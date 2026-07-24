@@ -37,13 +37,15 @@ class PropertyController extends Controller
         ];
     }
 
+
+
     public function create() {
-        if (auth()->user()->role !== 'host') {
-            return redirect()->route('front.become.host');
+        $user = auth()->user();
+        if ($user->role !== 'host' || $user->host_status !== 'approved') {
+            return redirect()->route('front.dashboard')->with('error', 'Only approved hosts can list properties.');
         }
         $categories = Category::whereNull('parent_id')->with('children')->ordered()->get();
         $amenities = Amenity::active()->ordered()->get();
-        
         return Inertia::render('Properties/Create', [
             'listing' => null,
             'categories' => $categories,
@@ -52,6 +54,7 @@ class PropertyController extends Controller
             'cancellationPolicies' => $this->getCancellationPolicies(),
         ]);
     }
+
 
     public function edit($id) {
         $user = auth()->user();
@@ -69,11 +72,16 @@ class PropertyController extends Controller
     }
 
 
-    public function storeProperty(ListingRequest $request) {
+       public function storeProperty(ListingRequest $request) {
+        $user = auth()->user();
+        if ($user->role !== 'host' || $user->host_status !== 'approved') {
+            return redirect()->back()->with('error', 'Your host account is not approved yet.');
+        }
         $data = $request->validated();
+        $data['status'] = false; 
         $this->service->storeListing($data, auth()->id());
-        return redirect()->route('front.properties.my-listings')->with('success', 'Property listed successfully!');
-    }
+        return redirect()->route('front.properties.my-listings')->with('success', 'Property submitted successfully! It will be visible to guests once approved by Admin.');
+       }
 
 
     public function update(ListingRequest $request, $id) {

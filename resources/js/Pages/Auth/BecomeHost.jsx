@@ -6,10 +6,11 @@ import FrontLayout from '@/Layouts/FrontLayout';
 export default function BecomeHost() {
     const { setting } = usePage().props;
     
-    const { data, setData, post, processing } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
+        pan_number: '',
+        citizenship_number: '',
         agreeTerms: false,
     });
-
     const submit = (e) => {
         e.preventDefault();
         
@@ -17,37 +18,34 @@ export default function BecomeHost() {
             toast.error('Please accept the Terms and Conditions to continue.');
             return;
         }
-
         post('/become-host', {
             onSuccess: (page) => {
                 if (page.props.flash.success) {
                     toast.success(page.props.flash.success);
                 }
+            },
+            onError: (err) => {
+                if (err.pan_number) toast.error(err.pan_number);
+                if (err.citizenship_number) toast.error(err.citizenship_number);
             }
         });
     };
-
-
     const defaultSteps = [
-        { title: 'Upgrade Your Account', content: 'Click the button below to unlock host features and dashboard access.' },
-        { title: 'List Your Property', content: 'Add your property details, location, amenities, and high-quality photos.' },
-        { title: 'Set Your Rules & Price', content: 'Define your house rules, check-in/out times, and set competitive nightly rates.' },
-        { title: 'Welcome Your Guests', content: 'Once approved, your listing goes live. Start receiving bookings and earning income!' }
+        { title: 'Submit Verification Details', content: 'Provide your PAN and Citizenship number for legal verification.' },
+        { title: 'Wait for Admin Approval', content: 'Our team will verify your documents. This usually takes 24-48 hours.' },
+        { title: 'List Your Property', content: 'Once approved, add your property details, location, amenities, and photos.' },
+        { title: 'Welcome Your Guests', content: 'Your listing goes live! Start receiving bookings and earning income.' }
     ];
-
     const workItems = setting?.work_item;
     const hostSteps = Array.isArray(workItems) && workItems.length > 0 ? workItems : defaultSteps;
-    
-
     const bgImage = setting?.bg_image_url || "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&q=80";
-
     return (
         <FrontLayout>
             <Head title="Become a Host - EzProperty" />
             
             <div className="min-h-[calc(100vh-80px)] grid md:grid-cols-2 bg-slate-50">
 
-           
+        
                 <div className="relative hidden md:block">
                     <img 
                         src={bgImage} 
@@ -68,7 +66,7 @@ export default function BecomeHost() {
                     </div>
                 </div>
 
-       
+              
                 <div className="flex flex-col justify-center items-center w-full p-6 sm:p-10 lg:p-12 relative overflow-y-auto">
 
                     <Link 
@@ -86,10 +84,10 @@ export default function BecomeHost() {
                             Become a Host
                         </h1>
                         <p className="text-slate-500 mb-6 leading-relaxed text-sm sm:text-base">
-                            Ready to earn from your property? Upgrade your account now to access the host dashboard and create your first listing in minutes.
+                            Ready to earn from your property? As per Nepali law, we require your verification details to get started.
                         </p>
 
-                       
+                  
                         <div className="mb-6 bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-sm">
                             <h3 className="text-base font-semibold text-slate-800 mb-4">How it works:</h3>
 
@@ -108,7 +106,46 @@ export default function BecomeHost() {
                             </ul>
                         </div>
 
+                  
                         <form onSubmit={submit}>
+                            
+              
+                            <div className="mb-6 bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-sm">
+                                <h3 className="text-base font-semibold text-slate-800 mb-4">Verification Details</h3>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">PAN Number</label>
+                                        <input 
+                                            type="text"
+                                            value={data.pan_number}
+                                            onChange={(e) => setData('pan_number', e.target.value)}
+                                            className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                                            placeholder="e.g. 123456789"
+                                            required
+                                        />
+                                        {errors.pan_number && <p className="text-red-500 text-xs mt-1">{errors.pan_number}</p>}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Citizenship / ID No.</label>
+                                        <input 
+                                            type="text"
+                                            value={data.citizenship_number}
+                                            onChange={(e) => setData('citizenship_number', e.target.value)}
+                                            className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                                            placeholder="e.g. 12-34-56-789"
+                                            required
+                                        />
+                                        {errors.citizenship_number && <p className="text-red-500 text-xs mt-1">{errors.citizenship_number}</p>}
+                                    </div>
+                                </div>
+                                <p className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg flex items-start gap-2">
+                                    <i className="fa-solid fa-shield-halved mt-0.5 text-brand"></i>
+                                    <span>As per Nepali law, we require your PAN and Citizenship for tax and security purposes. Your data is securely encrypted.</span>
+                                </p>
+                            </div>
+
+                     
                             <div className="flex items-start mb-5">
                                 <input
                                     id="agreeTerms"
@@ -127,6 +164,7 @@ export default function BecomeHost() {
                                 </label>
                             </div>
 
+                 
                             <button
                                 type="submit"
                                 disabled={processing || !data.agreeTerms}
@@ -138,9 +176,9 @@ export default function BecomeHost() {
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
-                                        Upgrading...
+                                        Submitting...
                                     </>
-                                ) : 'Agree & Become a Host'}
+                                ) : 'Submit Application'}
                             </button>
                         </form>
 

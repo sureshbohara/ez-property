@@ -20,6 +20,12 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('role', ['guest', 'host', 'admin'])->default('guest');
+            
+
+            $table->string('pan_number')->nullable();
+            $table->string('citizenship_number')->nullable();
+            $table->string('host_status')->default('none');
+
             $table->rememberToken();
             $table->timestamps();
         });

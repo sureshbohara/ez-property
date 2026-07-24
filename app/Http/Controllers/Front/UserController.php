@@ -17,8 +17,7 @@ class UserController extends Controller
 {
     protected $mediaService;
 
-    public function __construct(MediaService $mediaService)
-    {
+    public function __construct(MediaService $mediaService){
         $this->mediaService = $mediaService;
     }
 
@@ -32,7 +31,6 @@ class UserController extends Controller
             'password' => 'required',
             'remember' => 'boolean',
         ]);
-
         if (Auth::attempt(
             ['email' => $request->email, 'password' => $request->password],
             $request->boolean('remember')
@@ -40,13 +38,12 @@ class UserController extends Controller
             $request->session()->regenerate();
             return redirect()->intended('/')->with('success', 'Welcome back, ' . Auth::user()->name . '!');
         }
-        
         throw ValidationException::withMessages([
             'email' => ['The provided credentials do not match our records.'],
         ]);
     }
 
-    
+
 
     // =========================================
     // FORGOT PASSWORD METHODS
@@ -74,7 +71,6 @@ class UserController extends Controller
     }
 
 
-
     // =========================================
     // RESET PASSWORD METHODS
     // =========================================
@@ -91,7 +87,6 @@ class UserController extends Controller
             'email' => 'required|email',
             'password' => 'required|min:6|confirmed',
         ]);
-
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
@@ -102,17 +97,13 @@ class UserController extends Controller
                 $user->save();
             }
         );
-
         if ($status == Password::PASSWORD_RESET) {
             return redirect('/login')->with('success', __($status));
         }
-
         throw ValidationException::withMessages([
             'email' => [__($status)],
         ]);
     }
-
-
 
 
     public function showRegister() {
@@ -139,7 +130,6 @@ class UserController extends Controller
         return redirect('/')->with('success', 'Account created successfully! Welcome, ' . $user->name . '.');
     }
 
-
     public function logout(Request $request) {
         Auth::logout();
         $request->session()->invalidate();
@@ -148,19 +138,29 @@ class UserController extends Controller
     }
 
 
-
+   // =========================================
+    // UPGRADE TO HOST (WITH VERIFICATION)
+    // =========================================
     public function showBecomeHost() {
         return Inertia::render('Auth/BecomeHost');
     }
+
     public function upgradeToHost(Request $request) {
         $user = $request->user();
-        if ($user->role === 'guest') {
-            $user->role = 'host';
-            $user->save();
+        $request->validate([
+            'pan_number' => 'required|string|max:20',
+            'citizenship_number' => 'required|string|max:30',
+            'agreeTerms' => 'accepted',
+        ]);
+        if ($user->role === 'guest' && $user->host_status === 'none') {
+            $user->update([
+                'pan_number' => $request->pan_number,
+                'citizenship_number' => $request->citizenship_number,
+                'host_status' => 'pending', 
+            ]);
         }
-        return redirect()->route('front.properties.create')->with('success', 'You are now a host! List your first property.');
+        return redirect()->back()->with('success', 'Your application has been submitted! Please wait for Admin verification.');
     }
-
 
 
     public function updateProfile(Request $request){
@@ -174,7 +174,6 @@ class UserController extends Controller
             'gender' => 'nullable|string|max:20',
             'details' => 'nullable|string|max:1000',
         ]);
-
         $data = $request->only('name', 'email', 'phone', 'address', 'gender', 'details');
         if ($request->hasFile('image')) {
             if ($user->image && !filter_var($user->image, FILTER_VALIDATE_URL)) {
@@ -186,8 +185,6 @@ class UserController extends Controller
         }
         $user->update($data);
     }
-
-
 
     public function updatePassword(Request $request){
         $user = Auth::user();
@@ -203,5 +200,5 @@ class UserController extends Controller
         $user->update(['password' => Hash::make($request->password)]);
     }
 
-
+    
 }

@@ -13,7 +13,7 @@
 
     <ul class="metismenu" id="menu">
 
-        {{-- === OVERVIEW === --}}
+     
         <li class="{{ request()->routeIs('admin.dashboard') ? 'mm-active' : '' }}">
             <a href="{{ route('admin.dashboard') }}">
                 <div class="parent-icon"><i class="bi bi-speedometer2"></i></div>
@@ -21,7 +21,7 @@
             </a>
         </li>
 
-        {{-- === PROPERTY & BOOKINGS === --}}
+
         @canany(['listing.read', 'amenity.read'])
         <li class="menu-label">Property & Bookings</li>
 
@@ -56,7 +56,15 @@
         </li>
         @endcanany
 
-        {{-- === E-COMMERCE === --}}
+
+        <li class="{{ request()->routeIs(['listing.host.index', 'listing.host.approve', 'listing.host.reject']) ? 'mm-active' : '' }}">
+            <a href="{{ route('listing.host.index') }}">
+                <div class="parent-icon"><i class="bi bi-people-fill"></i></div>
+                <div class="menu-title">Guest & Host</div>
+            </a>
+        </li>
+
+   
         @canany(['brand.read', 'product.read', 'offer.read', 'coupon.read'])
         <li class="menu-label">E-Commerce</li>
 
